@@ -12,12 +12,21 @@ client.once('ready', () => {
     console.log('Ready!');
 });
 
+//the 2 id storage arrays 
 let IdStorage = new Array();
-let activeFliers = new Array(4);
+let activeFliers = new Array(3);
 //indicator for open islands 
 let active = false;
 var dodoCode = 0;
 var hostID;
+
+//check island is still open
+function checkOpen() {
+    message.send.channel(`3 hours have passed, island opened by ${hostID} is now closed`);
+    active = false;
+    dodoCode = 0;
+    console.log('timed out');
+}
 
 //checking messages, .on runs multiple times
 client.on('message', message => {
@@ -69,7 +78,7 @@ client.on('message', message => {
     //check for join queue command
     if (message.content === 'k!join') {
         //check if already in queue
-        let memberin = message.author.id; //assign id to var
+        let memberin = message.author.id; //assign id to variable
 
         //if same id is not found
         if(IdStorage.indexOf(memberin) === -1) {
@@ -80,7 +89,7 @@ client.on('message', message => {
             if(IdStorage.length === 1) {
                 message.channel.send('type `k!fly` to start');
             }
-            console.log(`placed ${message.author.username} in queue`);
+            console.log(`placed ${message.author.username} in queue in ${IdStorage.length}`);
         }
         //if same ID is found 
         else{
@@ -155,6 +164,8 @@ client.on('message', message => {
                 message.channel.send('Join the Queue with: `k!join` and enter `k!fly` when you are ready');
                 //active var prevents more islands from opening 
                 active = true;
+                //timer for 3 hours
+                setTimeout(checkOpen, 10800000);
             }
     
         }
@@ -178,6 +189,7 @@ client.on('message', message => {
         if(flyerID === IdStorage[0]) {
             //if no dodo code
             if(dodoCode === 0) {
+
                 message.reply(`you are cleared to fly! Enter \`k!landed\` once you've touched down successfully`);
                 console.log(`flying in ${flyerID} ${flyerName}`);
             }
