@@ -359,4 +359,4 @@ client.on('message', message => {
 });
 
 // test bot token
-client.login('Mzk1Nzc4NDY2MzQ1Mzg1OTg0.XqiAdw.MpkSHq5tW3Z7HWWY1Qxksc5pxWQ');
+client.login('testconfig.token');
