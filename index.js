@@ -2,6 +2,7 @@
 // require the discord.js module
 const config = require('./config.json');
 const Discord = require('discord.js');
+const fs = require('fs');
 
 // create a new Discord client
 const client = new Discord.Client();
@@ -22,10 +23,10 @@ var hostID;
 
 //check island is still open
 function checkOpen() {
-    message.send.channel(`3 hours have passed, island opened by ${hostID} is now closed`);
+    //message.send.channel(`3 hours have passed, island opened by ${hostID} is now closed`);
     active = false;
     dodoCode = 0;
-    console.log('timed out');
+    console.log(`island opened by ${hostID} timed out`);
 }
 
 //checking messages, .on runs multiple times
@@ -287,6 +288,48 @@ client.on('message', message => {
 
     message.channel.send(helpMessage);
     }
+
+/**
+    wishlist section not working yet 
+        - append on new line every time 
+        - if item=nothing then error message 
+        - search text files ?
+
+        idea !!! universal wishlist txt
+            - ignore duplicate entries and store author id
+            - ping stored ids when item is offered 
+
+**/
+    if(message.content.startsWith('k!wishlist')) {
+        let authorID = message.author.id;
+        let item = message.content.slice(11);
+
+        fs.appendFile(`H:\\Google Drive\\ACTIVE\\KazuBot\\wishlists\\${authorID}.txt`,item, (err) => {
+            if(err) throw err;
+        })
+
+        message.reply(`${item} has been added to your wishlist`)
+    }
+
+    if(message.content === 'k!mywishlist') {
+        let authorID = message.author.id;
+        let authorName = message.author.username;
+        let data;
+
+        fs.readFile(`H:\\Google Drive\\ACTIVE\\KazuBot\\wishlists\\${authorID}.txt`, (err, data) => {
+            if (err) throw err;
+
+        const wishlistMessage = new Discord.MessageEmbed()
+            .setColor('#FF8362')
+            .setTitle(`${authorName}'s wishlist`)
+            .setDescription(data) 
+            .setFooter('List cleared every week');
+
+        message.channel.send(wishlistMessage);
+
+        })
+    }
+
 });
 
 // login to Discord with your app's token
