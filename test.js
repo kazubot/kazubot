@@ -359,4 +359,4 @@ client.on('message', message => {
 });
 
 // test bot token
-client.login('testconfig.token');
+client.login(config.testToken);
