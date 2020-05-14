@@ -13,6 +13,9 @@ client.once('ready', () => {
     console.log('Ready!');
 });
 
+// login to Discord with your app's token
+client.login(config.token);
+
 //the 2 id storage arrays 
 let IdStorage = new Array();
 let activeFliers = new Array(3);
@@ -124,18 +127,18 @@ client.on('message', message => {
         }
         else //if not empty 
         {
-            //print user list
+            //print queue list
             let userID = IdStorage.values();
             let mention;
             let i = 1;
+            let listMessage = "Queue order is..."
             for(let display of userID) {
-                //create mention string 
                 mention = `<@${display}>`;
-                message.channel.send(`${i}: ${mention}`);
+                listMessage = listMessage + '\n' + i + ': ' + mention;
                 i++;
             }
+            message.channel.send(listMessage);
         }
-        
     }     
 
 
@@ -331,6 +334,3 @@ client.on('message', message => {
     }
 
 });
-
-// login to Discord with your app's token
-client.login(config.token);

@@ -1,0 +1,22 @@
+# vscode
+.vscode
+
+# npm
+package-lock.json
+node_modules
+.npmrc
+
+# Mac
+.DS_Store
+
+# NodeJS
+build
+node_modules
+package-lock.json
+.npmrc
+
+# JS linter
+.eslintrc.json
+
+# Config
+config.json
