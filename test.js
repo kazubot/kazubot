@@ -20,6 +20,9 @@ let activeFliers = new Array(3);
 let active = false;
 var dodoCode = 0;
 var hostID;
+var opening=false;
+var maxAllow;
+var visitCount=0;
 
 //check island is still open
 function timedOut() {
@@ -28,26 +31,17 @@ function timedOut() {
     dodoCode = 0;
     console.log(`island opened by ${hostID} timed out`);
     //clear user nickname back to normal
-    hostID.setUsername(hostName);
+    hostID.setNickname(hostName);
     hostID = 0;
-}
-
-function validateMessage(msgContent) {
-    var dodoCode = msgContent.slice(8);
-
-    if(!dodoCode) {
-        return false;
-    }
-    else {
-        return true;
-    }
 }
 
 function msgEmbed(type,title,desc,thumbnail,footer) {
     if(type === 'system') {
         footer='Ren K#6666';
     }
-
+    else
+    {
+        footer = " ";
     const Message = new Discord.MessageEmbed()
         .setColor('#FF8362')
         .setTitle(title)
@@ -56,6 +50,7 @@ function msgEmbed(type,title,desc,thumbnail,footer) {
         .setFooter(footer);
 
     return Message;
+    }
 }
 
 //checking messages, .on runs multiple times
@@ -123,7 +118,7 @@ client.on('message', message => {
     }
 
     //kick user out of queue
-    if(message.content === 'k!leave') {
+    if(message.content === 'k!leavequeue') {
         //var for sent msg user id    
         let memberout = message.author.id;
         //testing for match id value
@@ -170,28 +165,20 @@ client.on('message', message => {
         if(active === false)
         {
             hostID = message.author.id;
-            let hostName = message.author.username;
-            
+            hostName = message.author.username;
+            dodoCode = message.content.slice(8);
 
-            if(!validateMessage(message.content)) {
+            if(!dodoCode) {
+                //no dodocode
                 message.channel.send('Did you enter a dodo code?');
             }
             else
-            {               
-                console.log(`room opened ${hostID} ${hostName} ${dodoCode}`);
-                message.channel.send(
-                    msgEmbed("",`Queue for ${hostName} has been opened!`,`**DODO CODE**: ${dodoCode}`)
-                );
-                /*const openMsg = new Discord.MessageEmbed()
-                    .setColor('#FF8362')
-                    .setTitle('Queue for '+ hostName +' has been opened!')
-                    .setDescription('**DODO CODE**: '+ dodoCode);
-                message.channel.send(openMsg);
-                */
-                message.channel.send('Join the Queue with: `k!join` and enter `k!fly` when you are ready');
-                message.author.setUsername(`${hostName} //${dodoCode}`);
-                //timer for 3 hours
-                setTimeout(timedOut, 10800000);
+            {
+                //dodocode check cleared 
+                message.channel.send("enter the maximum # of visitors you want on your island at once!\nLike this: `k!max 8`");
+                //opening in progress, helps trigger next command
+                opening=true;
+                console.log(`room opening ${hostID} ${hostName} dodocode: ${dodoCode} opening:${opening}`);
             }
     
         }
@@ -200,9 +187,23 @@ client.on('message', message => {
             message.channel.send('An island is already being hosted');
             return;
         }
-            
-       
+    }
 
+    if(message.content.startsWith('k!max') && opening === true) {
+        maxAllow = message.content.slice(6);
+        if(message.author.id === hostID && !isNaN(maxAllow)) {
+            console.log(`room opening maxallow ${maxAllow}`);
+
+            message.channel.send(
+                msgEmbed("",`Queue for ${hostName} has been opened!`,`**DODO CODE**: ${dodoCode}\nMax visitors: ${maxAllow}`)
+            );
+            message.channel.send('Join the Queue with: `k!join`');
+            //timer for 3 hours
+            setTimeout(timedOut, 10800000);
+        }
+        else {
+            message.reply('Please enter a number');
+        }
     }
 
     if(message.content === 'k!fly') {
@@ -211,29 +212,35 @@ client.on('message', message => {
         let flyerID = message.author.id;
         let flyerName = message.author.username;
        
-        //if id matches first in line id
-        if(flyerID === IdStorage[0]) {
-            //if no dodo code
-            if(dodoCode === 0) {
+        //if there is space on island
+        if(visitCount < maxAllow) {
+            //if id matches first in line id
+            if(flyerID === IdStorage[visitCount]) {
+                //if no dodo code
+                if(dodoCode === 0) {
 
-                message.reply(`you are cleared to fly! Enter \`k!landed\` once you've touched down successfully`);
-                console.log(`flying in ${flyerID} ${flyerName}`);
+                    message.reply(`you are cleared to fly! Enter \`k!landed\` once you've touched down successfully`);
+                    console.log(`flying in ${flyerID} ${flyerName}`);
+                }
+                //if dodo code
+                else
+                {
+                    message.channel.send(`${flyerName} you are cleared to fly! The dodo code once again is || ${dodoCode} ||\n Enter \`k!landed\` once you've touched down successfully`);
+                    console.log(`flying in ${flyerID} ${flyerName}`);
+                }
+                
             }
-            //if dodo code
+            //if id does not match first in line
             else
             {
-                message.channel.send(`${flyerName} you are cleared to fly! The dodo code once again is || ${dodoCode} ||\n Enter \`k!landed\` once you've touched down successfully`);
-                console.log(`flying in ${flyerID} ${flyerName}`);
+                message.channel.send('Sorry! you are not first in line!');
+                return;
             }
-            
         }
-        //if id does not match first in line
-        else
-        {
-            message.channel.send('Sorry! you are not first in line!');
+        else {
+            message.channel.send('Sorry! island is full! Please wait until someone leaves');
             return;
         }
-        
     }
 
     if(message.content === 'k!landed') {
@@ -241,14 +248,11 @@ client.on('message', message => {
         //prompt following user to fly
         let curID = message.author.id;
         //flyer id matches first in line 
-        if (curID === IdStorage[0])
+        if (curID === IdStorage[visitCount])
         {
-            //save flier to second array
-            activeFliers.push(curID);
             //save next flier variable
-            let nextID = IdStorage[1];
-            //delete 1 item in index 0 
-            IdStorage.splice(0, 1);
+            let nextID = IdStorage[visitCount+1];
+
             //if there no more ids
             if(!nextID)
             {
@@ -257,19 +261,33 @@ client.on('message', message => {
             //if more in line
             else
             {
+                visitCount = visitCount+1;
                 message.channel.send(`<@${nextID}> you are clear for takeoff! Enter \`k!landed\` once you've touched down successfully`);
-                console.log(`prompting next flier ${nextID}`);
-                
-                
+                console.log(`prompting next flier ${nextID} and +1 to visitcount: ${visitCount}`);
             }  
         }
         //flyer id does not match
         else
         {
             message.channel.send('Sorry you are not currently flying!');
-            console.log(`non flier executed landing`);
             return;
         }
+    }
+
+    if(message.content === 'k!returned') {
+        let retID = message.author.id;
+        let retIDIndex = IdStorage.indexOf(retID);
+
+        //no matching value
+        if(retIDIndex === -1) {
+            message.reply('you are not on the island')
+        }
+        else {
+            IdStorage.splice(retIDIndex, 1);
+            message.reply (`removed from queue`);
+            visitCount = visitCount-1;    
+        }
+        
     }
 
     if(message.content === 'k!end') {
@@ -305,8 +323,9 @@ client.on('message', message => {
                 { name:'\u200B', value:'`k!join`\n to join the queue' },
                 { name:'\u200B', value:'`k!fly`\n to tell the bot you are present and ready to fly in' },
                 { name:'\u200B', value:'`k!landed`\n to tell the bot you\'ve landed on the island' },
+                { name:'\u200B', value:'`k!returned`\n to tell the bot you\'ve returned home' },
                 { name:'\u200B', value:'`k!end`\n to tell the bot you are closing your island. (Empties queue)' },
-                { name:'\u200B', value:'`k!leave`\n to leave to queue' },
+                { name:'\u200B', value:'`k!leavequeue`\n to leave to queue' },
                 { name:'\u200B', value:'`k!viewlist`\n to see the queue list' },
             )
             .setFooter('Ren K#6666');
