@@ -14,14 +14,14 @@ client.once('ready', () => {
 });
 
 //the 2 id storage arrays 
-let IdStorage = new Array();
-let activeFliers = new Array(3);
+let queueList = new Array();
+var activeVisitors = new Array();
 //indicator for open islands 
 let active = false;
 var dodoCode = 0;
 var hostID;
 var opening=false;
-var maxAllow;
+var maxAllow=8;
 var visitCount=0;
 
 //check island is still open
@@ -35,28 +35,19 @@ function timedOut() {
     hostID = 0;
 }
 
-function msgEmbed(type,title,desc,thumbnail,footer) {
-    if(type === 'system') {
-        footer='Ren K#6666';
-    }
-    else
-    {
-        footer = " ";
-    const Message = new Discord.MessageEmbed()
-        .setColor('#FF8362')
-        .setTitle(title)
-        .setDescription(desc) 
-        .setThumbnail(thumbnail)
-        .setFooter(footer);
-
-    return Message;
-    }
-}
-
 //checking messages, .on runs multiple times
 client.on('message', message => {
     //auto check for prefix and ignore sent by bots
-    if(!message.content.startsWith('k!')||message.author.bot) return;
+   // if(!message.author.bot) return;
+
+    function msgEmbed(title,desc,thumbnail) {
+        const Message = new Discord.MessageEmbed()
+            .setColor('#FF8362')
+            .setTitle(title)
+            .setDescription(desc) 
+            .setThumbnail(thumbnail)
+        message.channel.send(Message);
+    }
 
     if(message.content === 'k!hi') {
         let msgAuthor = message.author.id;
@@ -65,33 +56,26 @@ client.on('message', message => {
        
         //24h into 12
         if(today.getHours()>12) {
-
-            message.channel.send(
-                msgEmbed(
-                    'system',
-                    ':)',
-                    `Hi <@${msgAuthor}> I'm online now!\n\n ${today.toDateString()}, ${today.getHours()-12}:${today.getMinutes()}PM`,
-                    'https://pbs.twimg.com/media/EW-7berUMAEMNke?format=png',
-                )
+            msgEmbed(
+                ':)',
+                `Hi <@${msgAuthor}> I'm online now!\n\n ${today.toDateString()}, ${today.getHours()-12}:${today.getMinutes()}PM`,
+                'https://pbs.twimg.com/media/EW-7berUMAEMNke?format=png',
             );
         }
         //12h is AM
         else {
-            message.channel.send(  
-                msgEmbed(
-                    'system',
-                    ':)',
-                    `Hi <@${msgAuthor}> I'm online!\n\n ${today.toDateString()}, ${today.getHours()}:${today.getMinutes()}AM`,
-                    'https://pbs.twimg.com/media/EW-7berUMAEMNke?format=png',
-                )
-            ); 
+            msgEmbed(
+                ':)',
+                `Hi <@${msgAuthor}> I'm online!\n\n ${today.toDateString()}, ${today.getHours()}:${today.getMinutes()}AM`,
+                'https://pbs.twimg.com/media/EW-7berUMAEMNke?format=png',
+            );
         }       
     }
 
     if(message.content === 'k!bye') {
 
         message.channel.send(
-            msgEmbed('system',':(','I\'m going offline for now')
+            msgEmbed(':(','I\'m going offline for now')
         );
     }
 
@@ -99,21 +83,22 @@ client.on('message', message => {
     if (message.content === 'k!join') {
         //check if already in queue
         let memberin = message.author.id; //assign id to variable
+        let memberName = message.author.username;
 
-        //if same id is not found
-        if(IdStorage.indexOf(memberin) === -1) {
+        //if same id is not found in qlist
+        if(queueList.indexOf(memberin) === -1) {
             //place message sender's id in list 
-            IdStorage.push(message.author.id);
-            message.reply (`placed in queue list, you are #${IdStorage.length}`);
+            queueList.push(message.author.id);
+            msgEmbed(" ",`${memberName} placed in queue list, you are #${queueList.length}`);
             //if first in line
-            if(IdStorage.length === 1) {
+            if(queueList.length === 1) {
                 message.channel.send('type `k!fly` to start');
             }
-            console.log(`placed ${message.author.username} in queue in ${IdStorage.length}`);
+            console.log(`placed ${memberName} in queue in ${queueList.length}`);
         }
         //if same ID is found 
         else{
-            message.channel.send(`You are already in queue!`);
+            msgEmbed(`You are already in queue!`);
         }
     }
 
@@ -121,42 +106,66 @@ client.on('message', message => {
     if(message.content === 'k!leavequeue') {
         //var for sent msg user id    
         let memberout = message.author.id;
+        let memberoutName = message.author.username;
         //testing for match id value
-        let memberIndex = IdStorage.indexOf(memberout);
+        let memberIndex = queueList.indexOf(memberout);
         //if there is no matching value 
         if(memberIndex === -1) {
-            message.reply(`Sorry, you are not in queue!`);
+            msgEmbed(`Sorry, you are not in queue!`);
         }
         //if there is matching value
         else{
             //delete entry , remove 1 item at memberindex 
-            IdStorage.splice(memberIndex, 1);
-            message.reply (`removed from queue`);
+            queueList.splice(memberIndex, 1);
+            msgEmbed(`${memberoutName}removed from queue`);
             console.log(`removed ${message.author.username} from queue`);
         }
     }
 
     if(message.content === 'k!viewlist') {
         //check if queue is empty
-        if(IdStorage.length === 0) {
-            message.channel.send(`Queue is empty!`)
+        if(queueList.length === 0) {
+            msgEmbed(`Queue is empty!`);
         }
         else //if not empty 
         {
-            //print user list
-            let userID = IdStorage.values();
+            //print queue list
+            let userID = queueList.values();
             let mention;
             let i = 1;
+            let listMessage = "Queue order is..."
+
             for(let display of userID) {
-                //create mention string 
                 mention = `<@${display}>`;
-                message.channel.send(`${i}: ${mention}`);
+                listMessage = listMessage + '\n' + i + ': ' + mention;
                 i++;
             }
+            msgEmbed(" ",listMessage);
         }
         
-    }     
+    }       
 
+    if(message.content === 'k!viewvisitors') {
+        //check if queue is empty
+        if(activeVisitors.length === 0) {
+            msgEmbed(`Queue is empty!`, " ");
+        }
+        else //if not empty 
+        {
+            //print visitor list
+            let userID = activeVisitors.values();
+            let mention;
+            let i = 1;
+            let listMessage = "Current visitors on the island...";
+
+            for(let display of userID) {
+                mention = `<@${display}>`;
+                listMessage = listMessage + '\n' + i + ': ' + mention;
+                i++;
+            }
+            msgEmbed(" ",listMessage);
+        }
+    }  
 
     if(message.content.startsWith('k!start')) {
         //store author id
@@ -170,12 +179,14 @@ client.on('message', message => {
 
             if(!dodoCode) {
                 //no dodocode
-                message.channel.send('Did you enter a dodo code?');
+                msgEmbed(" ","Did you enter a dodo code?");
             }
             else
             {
                 //dodocode check cleared 
-                message.channel.send("enter the maximum # of visitors you want on your island at once!\nLike this: `k!max 8`");
+                msgEmbed("Enter the maximum # of visitors you want on your island at once!",
+                "Like this: `k!max 8`\n\nRecommended number for Turnips: 4");
+                active=true;
                 //opening in progress, helps trigger next command
                 opening=true;
                 console.log(`room opening ${hostID} ${hostName} dodocode: ${dodoCode} opening:${opening}`);
@@ -189,24 +200,34 @@ client.on('message', message => {
         }
     }
 
-    if(message.content.startsWith('k!max') && opening === true) {
-        maxAllow = message.content.slice(6);
-        if(message.author.id === hostID && !isNaN(maxAllow)) {
+    if(message.author.id === hostID && opening === true) {
+        maxAllow = message.content;
+
+        if(!isNaN(maxAllow)) {
             console.log(`room opening maxallow ${maxAllow}`);
 
-            message.channel.send(
-                msgEmbed("",`Queue for ${hostName} has been opened!`,`**DODO CODE**: ${dodoCode}\nMax visitors: ${maxAllow}`)
-            );
+            msgEmbed(`Queue for ${hostName} has been opened!`,`**DODO CODE**: ${dodoCode}\nMax visitors at once: ${maxAllow}`);
+
             message.channel.send('Join the Queue with: `k!join`');
+            //close the command
+            opening=false;
             //timer for 3 hours
             setTimeout(timedOut, 10800000);
         }
-        else {
-            message.reply('Please enter a number');
+    }
+
+    if(message.content === 'k!island') {
+        //see island msgEmbed again
+        if(active === true) {
+            msgEmbed(`${hostName}'s island is open!`,`**DODO CODE**: ${dodoCode}\nMax visitors at once: ${maxAllow}`);
+        }
+        else
+        {
+            msgEmbed('There is no island open right now');
         }
     }
 
-    if(message.content === 'k!fly') {
+    /*if(message.content === 'k!fly') {
         //post dodocode again and cleared to fly
         //save author id
         let flyerID = message.author.id;
@@ -215,7 +236,7 @@ client.on('message', message => {
         //if there is space on island
         if(visitCount < maxAllow) {
             //if id matches first in line id
-            if(flyerID === IdStorage[visitCount]) {
+            if(flyerID === queueList[visitCount]) {
                 //if no dodo code
                 if(dodoCode === 0) {
 
@@ -241,51 +262,115 @@ client.on('message', message => {
             message.channel.send('Sorry! island is full! Please wait until someone leaves');
             return;
         }
+    }*/
+
+    if(message.content === "k!fly") {
+        //post dodocode again and cleared to fly
+        //save authorid in either array
+        let flyerID = message.author.id;
+        let flyerName = message.author.id.username;
+
+       //should only pull from Queuelist array 
+       //if activevisitors array is less or equal to max allowed on island
+       if(activeVisitors.length <= maxAllow) {
+            //if first in queuelist line
+            //then can fly in 
+            if(flyerID === queueList[0]) {
+                 //if no dodo code
+                 if(dodoCode === 0) {
+
+                    msgEmbed(" ",`<@${flyerID}> is flying! Enter \`k!landed\` once you've touched down successfully`);
+                    console.log(`flying in ${flyerID} ${flyerName}`);
+                }
+                //if dodo code
+                else
+                {
+                    msgEmbed(" ",`<@${flyerID}> is flying! The dodo code once again is || ${dodoCode} ||\n Enter \`k!landed\` once you've touched down successfully`);
+                    console.log(`flying in ${flyerID} ${flyerName}`);
+                }
+                
+            }
+            //if id does not match first in line
+            else
+            {
+                msgEmbed('Sorry! you are not first in line!');
+                return;
+            }
+       }
+       else {
+       msgEmbed('Sorry! island is full! Please wait until someone leaves');
+        return;
+       }
     }
+    
 
     if(message.content === 'k!landed') {
-        //grab key and remove user from line
         //prompt following user to fly
         let curID = message.author.id;
         //flyer id matches first in line 
-        if (curID === IdStorage[visitCount])
+        if (curID === queueList[0])
         {
             //save next flier variable
-            let nextID = IdStorage[visitCount+1];
+            let nextID = queueList[1];
 
             //if there no more ids
             if(!nextID)
             {
-                message.channel.send('Queue is now empty!')
+                msgEmbed('Queue is now empty!', " ");
+                visitCount = visitCount+1;
+                //move flyerid to active visitors array 
+                activeVisitors.push(curID);
+                queueList.splice(0,1);
+
+                console.log(`visit count:${visitCount}`);
             }
             //if more in line
             else
             {
+                //count +1 on island
                 visitCount = visitCount+1;
-                message.channel.send(`<@${nextID}> you are clear for takeoff! Enter \`k!landed\` once you've touched down successfully`);
+                msgEmbed(" ",`<@${nextID}> you are clear for takeoff! Enter \`k!landed\` once you've touched down successfully`);
                 console.log(`prompting next flier ${nextID} and +1 to visitcount: ${visitCount}`);
+                //move flyerid to active visitors array 
+                activeVisitors.push(curID);
+                queueList.splice(0,1);
+
+                //if island is full push the message
+                if(visitCount === maxAllow){
+                    msgEmbed("Island is now full, next flier will be prompted once someone leaves\nVisitors please remember to enter `k!returned` once you've left");
+                }
             }  
         }
         //flyer id does not match
         else
         {
-            message.channel.send('Sorry you are not currently flying!');
+            msgEmbed('Sorry you are not currently flying!');
             return;
         }
     }
 
     if(message.content === 'k!returned') {
         let retID = message.author.id;
-        let retIDIndex = IdStorage.indexOf(retID);
+        let retIDIndex = activeVisitors.indexOf(retID);
 
         //no matching value
         if(retIDIndex === -1) {
-            message.reply('you are not on the island')
+            msgEmbed('you are not on the island');
         }
         else {
-            IdStorage.splice(retIDIndex, 1);
-            message.reply (`removed from queue`);
-            visitCount = visitCount-1;    
+            //remove id from activevisitors
+            activeVisitors.splice(retIDIndex, 1);
+            msgEmbed(" ",`<@${retID}> has returned home`);
+            visitCount = visitCount-1;
+            //prompt next flier if anyone is on the list
+            if(queueList.length > 0) {
+                msgEmbed(" ",`<@${queueList[0]}> you are clear for takeoff! Enter \`k!landed\` once you've touched down successfully`);
+            }
+            //else the list is empty 
+            else
+            {
+                msgEmbed(" ", "Everyone has left!");        
+            }
         }
         
     }
@@ -297,9 +382,9 @@ client.on('message', message => {
         //check your id is host id
         if(endID === hostID) {
             //clear queue
-            IdStorage.fill(0);
+            queueList.fill(0);
 
-            message.channel.send('Queue has been cleared! Thank you for hosting!');
+            msgEmbed(" ",'Queue has been cleared! Thank you for hosting!');
             //reopened new island requests
             active = false;
             dodoCode = 0;
@@ -308,7 +393,7 @@ client.on('message', message => {
         //not host id 
         else
         {
-            message.channel.send('Sorry you are not the host!');
+            msgEmbed('Sorry you are not the host!');
             console.log('non host tried to close room');
         }
     }
@@ -321,6 +406,7 @@ client.on('message', message => {
             .addFields(
                 { name:'\u200B', value:'`k!start dodocode`\n to start a queue as an island host\neg: k!start F3GR3' },
                 { name:'\u200B', value:'`k!join`\n to join the queue' },
+                { name:'\u200B', value:'`k!island`\n to see the open island info again' },
                 { name:'\u200B', value:'`k!fly`\n to tell the bot you are present and ready to fly in' },
                 { name:'\u200B', value:'`k!landed`\n to tell the bot you\'ve landed on the island' },
                 { name:'\u200B', value:'`k!returned`\n to tell the bot you\'ve returned home' },
@@ -342,7 +428,7 @@ client.on('message', message => {
         idea !!! universal wishlist txt
             - ignore duplicate entries and store author id
             - ping stored ids when item is offered 
-**/
+
 
     if(message.content.startsWith('k!wishlist')) {
         let authorID = message.author.id;
@@ -373,7 +459,7 @@ client.on('message', message => {
 
         })
     }
-
+**/
 
 });
 
