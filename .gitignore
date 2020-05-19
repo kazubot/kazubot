@@ -15,8 +15,5 @@ node_modules
 package-lock.json
 .npmrc
 
-# JS linter
-.eslintrc.json
-
 # Config
 config.json
