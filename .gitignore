@@ -12,7 +12,6 @@ node_modules
 # NodeJS
 build
 node_modules
-package-lock.json
 .npmrc
 
 # Config
