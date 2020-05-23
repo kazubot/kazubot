@@ -14,19 +14,28 @@ client.login(config.token);
 
 const queueList = new Array();
 const activeVisitors = new Array();
+const prefix = "k!"
 
 let active = false;
-let dodoCode = 0;
 let hostID;
-let opening = false;
-let maxAllow = 8;
-let visitCount = 0;
+let dodoCode;
+let maxVisitors;
+let maxQueueSize;
+let visitCount;
 let qRemove;
 
 //#endregion
 
 // listening for messages on monitored channels, .on runs multiple times
 client.on('message', message => {
+	// ignore bot messages
+	if (message.author.bot) return;
+
+	// parse message into command and arguments
+	const args = message.content.slice(prefix.length).trim().split(/ +/g);
+	const command = args.shift().toLowerCase();
+
+	//#region helper functions
 
 	function msgEmbed(title, desc, thumbnail) {
 		const Message = new Discord.MessageEmbed()
@@ -37,9 +46,40 @@ client.on('message', message => {
 		message.channel.send(Message);
 	}
 
+	function printList(listType = 0) {
+		// print list
+		let userID = listType ? queueList.values() : activeVisitors.values();
+		let listMessage = listType ? `Queue order is:` : `Visitor(s) on island:`
+		let mention;
+		let i = 1;
+
+		for (const display of userID) {
+			mention = `<@${display}>`;
+			listMessage = listMessage + '\n' + i + ': ' + mention;
+			i++;
+		}
+		msgEmbed(' ', listMessage);
+	}
+
+	function printIsland() {
+		if (active === true) {
+			msgEmbed(`Island opened with queue!`, 
+			`**Dodo code: ${dodoCode}**
+			\nHost: <@${hostID}>
+			\nCurrent visitors: ${activeVisitors.length}
+			\nMax concurrent visitors: ${maxVisitors}
+			\nMax queue size: ${maxQueueSize}`);	
+		}
+		else {
+			msgEmbed('There is no island queue open right now.');
+		}
+	}
+
+	//#endregion
+
 	//#region status check functionality
 
-	if (message.content === 'k!hi') {
+	if (command === 'hi') {
 		const msgAuthor = message.author.id;
 		const today = new Date();
 
@@ -61,7 +101,7 @@ client.on('message', message => {
 		}
 	}
 
-	if (message.content === 'k!bye') {
+	if (command === 'bye') {
 
 		message.channel.send(
 			msgEmbed(':(', 'I\'m going offline for now'),
@@ -72,26 +112,27 @@ client.on('message', message => {
 
 	//#region queueing functionality
 
-	if (message.content === 'k!join') {
+	if (command === 'join') {
 		// check if already in queue
-		const memberin = message.author.id;
-		const memberName = message.author.username;
+		const authorId = message.author.id;
 
 		// if same id is not found in qlist
-		if (queueList.indexOf(memberin) === -1) {
+		if (queueList.indexOf(authorId) === -1) {
 			// place message sender's id in list
-			queueList.push(message.author.id);
-			msgEmbed(' ', `${memberName} placed in queue list, you are #${queueList.length}`);
+			queueList.push(authorId);
+			msgEmbed(' ', `<@${authorId}> placed in queue list, you are #${queueList.length}`);
 			// if first in line
 			if (queueList.length === 1) {
 				message.channel.send('type `k!fly` to start');
 			}
-			console.log(`placed ${memberName} in queue in ${queueList.length}`);
+			console.log(`placed ${authorId} in queue in ${queueList.length}`);
 		}
 		else {
 			msgEmbed('You are already in queue!');
 		}
 	}
+
+	//#region Kick from Queue
 
 	// host can remove members
 	if (message.content.startsWith('k!remove') && hostID === message.author.id) {
@@ -109,7 +150,7 @@ client.on('message', message => {
 					// if user is in queuelist
 					// eslint-disable-next-line no-unused-vars
 					qRemove = true;
-					msgEmbed('Do you want to remove user from the Queue List? (Y/N)');
+					msgEmbed('Do you want to remove user  from the Queue List? (Y/N)');
 				}
 			}
 			else {
@@ -141,10 +182,9 @@ client.on('message', message => {
 	}
 
 	// kick user out of queue
-	if (message.content === 'k!leavequeue') {
+	if (command === 'leavequeue') {
 		// var for sent msg user id
 		const memberout = message.author.id;
-		const memberoutName = message.author.username;
 		// testing for match id value
 		const memberIndex = queueList.indexOf(memberout);
 		// if there is no matching value
@@ -155,40 +195,27 @@ client.on('message', message => {
 		else {
 			// delete entry , remove 1 item at memberindex
 			queueList.splice(memberIndex, 1);
-			msgEmbed(`${memberoutName}removed from queue`);
-			console.log(`removed ${message.author.username} from queue`);
+			msgEmbed(`${memberout}removed from queue`);
+			console.log(`removed ${memberout} from queue`);
 		}
 	}
 
-	if (message.content === 'k!viewlist') {
+	//#endregion
+
+	if (command === 'viewlist') {
 		// check if queue is empty
 		if (queueList.length === 0) {
-			msgEmbed('Queue is empty!');
+			msgEmbed('The queue is empty!');
 		}
 		else {
 			printList(1);
 		}
 	}
 
-	function printList(listType = 0) {
-			// print list
-			const userID = isQueue ? queueList.values() : activeVisitors.values();
-			let mention;
-			let i = 1;
-			let listMessage = 'Queue order is...';
-
-			for (const display of userID) {
-				mention = `<@${display}>`;
-				listMessage = listMessage + '\n' + i + ': ' + mention;
-				i++;
-			}
-			msgEmbed(' ', listMessage);
-	}
-
-	if (message.content === 'k!viewvisitors') {
+	if (command === 'viewvisitors') {
 		// check if queue is empty
 		if (activeVisitors.length === 0) {
-			msgEmbed('No one is on the island', ' ');
+			msgEmbed(``, `There are no visitors on the island.`);
 		}
 		else {
 			printList(0);
@@ -197,27 +224,27 @@ client.on('message', message => {
 
 	if (message.content.startsWith('k!start')) {
 		// store author id
-		// end command only executable by this user or timer
+		// end command only executable by this user
 		// checks if an island is running
 		if (active === false) {
 			hostID = message.author.id;
-			hostName = message.author.username;
-			dodoCode = message.content.slice(8);
+			dodoCode = args[0];
+			maxVisitors = !isNaN(args[1]) ? Math.abs(args[1]) : 7; // 7 is max capacity for visitors in AC:NH
+			maxQueueSize = !isNaN(args[2]) ? Math.abs(args[2]) : 120; // 120 is a good ceiling for a PM turnip selling queue
 
-			if (!dodoCode) {
-				// no dodocode
-				msgEmbed(' ', 'Did you enter a dodo code?');
+			if (!dodoCode || maxVisitors > 7 || maxQueueSize > 120) {
+				// queue arguments passed in message are unacceptable
+				msgEmbed(`You requested a queue with missing or incorrect values, try again!`, 
+				`Format: \`k!start dodoCode concurrentVisitorLimit queueSizeLimit\`
+				\n Values: Concurrent Visitor Maximum = 7 | Queue Size Maximum = 120`);
 			}
 			else {
-				// dodocode check cleared
-				msgEmbed('Enter the maximum # of visitors you want on your island at once!',
-					'Like this: `k!max 8`\n\nRecommended number for Turnips: 4');
+				// valid arguments passed for queue
 				active = true;
-				// opening in progress, helps trigger next command
-				opening = true;
-				console.log(`room opening ${hostID} ${hostName} dodocode: ${dodoCode} opening:${opening}`);
+				printIsland();
+				message.channel.send('When ready, join the queue with: `k!join`');
+				console.log(`Island opening with maxVisitors: ${maxVisitors}`);
 			}
-
 		}
 		else {
 			message.channel.send('An island is already being hosted');
@@ -225,41 +252,18 @@ client.on('message', message => {
 		}
 	}
 
-	if (message.author.id === hostID && opening === true) {
-		maxAllow = message.content;
-
-		if (!isNaN(maxAllow)) {
-			console.log(`room opening maxallow ${maxAllow}`);
-
-			msgEmbed(`Queue for ${hostName} has been opened!`, `**DODO CODE**: ${dodoCode}\nMax visitors at once: ${maxAllow}`);
-
-			message.channel.send('Join the Queue with: `k!join`');
-			// close the command
-			opening = false;
-			// timer for 3 hours
-			setTimeout(timedOut, 10800000);
-		}
+	if (command === 'island') {
+		printIsland();
 	}
 
-	if (message.content === 'k!island') {
-		// see island msgEmbed again
-		if (active === true) {
-			msgEmbed(`${hostName}'s island is open!`, `**DODO CODE**: ${dodoCode}\nMax visitors at once: ${maxAllow}`);
-		}
-		else {
-			msgEmbed('There is no island open right now');
-		}
-	}
-
-	if (message.content === 'k!fly') {
+	if (command === 'fly') {
 		// post dodocode again and cleared to fly
 		// save authorid in either array
 		const flyerID = message.author.id;
-		const flyerName = message.author.id.username;
 
 		// should only pull from Queuelist array
 		// if activevisitors array is less or equal to max allowed on island
-		if (activeVisitors.length <= maxAllow) {
+		if (activeVisitors.length <= maxVisitors) {
 			// if first in queuelist line
 			// then can fly in
 			if (flyerID === queueList[0]) {
@@ -267,32 +271,32 @@ client.on('message', message => {
 				if (dodoCode === 0) {
 
 					msgEmbed(' ', `<@${flyerID}> is flying! Enter \`k!landed\` once you've touched down successfully`);
-					console.log(`flying in ${flyerID} ${flyerName}`);
+					console.log(`flying in ${flyerID}`);
 				}
 				// if dodo code
 				else {
-					msgEmbed(' ', `<@${flyerID}> is flying! The dodo code once again is || ${dodoCode} ||\n Enter \`k!landed\` once you've touched down successfully`);
-					console.log(`flying in ${flyerID} ${flyerName}`);
+					msgEmbed(' ', `<@${flyerID}> is flying! The dodo code once again is || ${dodoCode} || \n Enter \`k!landed\` once you've touched down successfully`);
+					console.log(`flying in ${flyerID}`);
 				}
 
 			}
 			// if id does not match first in line
 			else {
-				msgEmbed('Sorry! you are not first in line!');
+				msgEmbed('Sorry! You are not first in line!');
 				printList(1);
 			}
 		}
 		else {
-			msgEmbed('Sorry! island is full! Please wait until someone leaves');
+			msgEmbed('Sorry! The island is full! Please wait until someone leaves');
 			return;
 		}
 	}
 
-	if (message.content === 'k!landed') {
+	if (command === 'landed') {
 		// prompt following user to fly
-		const curID = message.author.id;
+		const currentId = message.author.id;
 		// flyer id matches first in line
-		if (curID === queueList[0]) {
+		if (currentId === queueList[0]) {
 			// save next flier variable
 			const nextID = queueList[1];
 
@@ -301,7 +305,7 @@ client.on('message', message => {
 				msgEmbed('Queue is now empty!', ' ');
 				visitCount = visitCount + 1;
 				// move flyerid to active visitors array
-				activeVisitors.push(curID);
+				activeVisitors.push(currentId);
 				queueList.splice(0, 1);
 
 				console.log(`visit count:${visitCount}`);
@@ -313,11 +317,11 @@ client.on('message', message => {
 				msgEmbed(' ', `<@${nextID}> you are clear for takeoff! Enter \`k!landed\` once you've touched down successfully`);
 				console.log(`prompting next flier ${nextID} and +1 to visitcount: ${visitCount}`);
 				// move flyerid to active visitors array
-				activeVisitors.push(curID);
+				activeVisitors.push(currentId);
 				queueList.splice(0, 1);
 
 				// if island is full push the message
-				if (visitCount === maxAllow) {
+				if (visitCount === maxVisitors) {
 					msgEmbed('Island is now full, next flier will be prompted once someone leaves\nVisitors please remember to enter `k!returned` once you\'ve left');
 				}
 			}
@@ -329,7 +333,7 @@ client.on('message', message => {
 		}
 	}
 
-	if (message.content === 'k!returned') {
+	if (command === 'returned') {
 		const retID = message.author.id;
 		const retIDIndex = activeVisitors.indexOf(retID);
 
@@ -354,7 +358,7 @@ client.on('message', message => {
 
 	}
 
-	if (message.content === 'k!end') {
+	if (command === 'end') {
 		// island is closed
 		const endID = message.author.id;
 		console.log(`end command ${endID} host was ${hostID}`);
@@ -376,7 +380,7 @@ client.on('message', message => {
 		}
 	}
 
-	if (message.content === 'k!queuehelp') {
+	if (command === 'queuehelp') {
 		const helpMessage = new Discord.MessageEmbed()
 			.setColor('#FF8362')
 			.setTitle('Queue Commands')
