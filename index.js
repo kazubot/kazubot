@@ -22,7 +22,6 @@ let dodoCode;
 let maxVisitors;
 let maxQueueSize;
 let visitCount;
-let kickId;
 
 //#endregion
 
@@ -257,7 +256,8 @@ client.on('message', message => {
 
 	if (command === 'remove') {
 		if (hostID === messageAuthor || message.member.hasPermission('ADMINISTRATOR')) {
-			kickId = message.mentions.users.first();
+			let kickId = message.mentions.users.first().toString();
+			kickId = kickId.replace(/\D/g, ''); // use regex to strip out non-digit characters
 
 			if (kickId !== null && kickId !== '') {
 				removeUser(kickId);
@@ -321,18 +321,34 @@ client.on('message', message => {
 	}
 
 	function removeUser(removeId) {
-		if (activeVisitors.indexOf(removeId) === -1) {
-			if (queueList.indexOf(removeId === -1)) {
-				msgEmbed('User to remove is not in queue or an active island visitor.');
+		let didRemove = false;
+		let removeMessage = `Removed <@${removeId}> from `;
+		console.log(`user to remove: ${removeId}`);
+		console.log(`queue list: ${queueList.toString()}`);
+		console.log(`visitor list: ${activeVisitors.toString()}`);
+		console.log(`index lookup for queue check: ${queueList.indexOf(removeId)}`);
+		console.log(`index lookup for visitor check: ${activeVisitors.indexOf(removeId)}`);
+
+		if (queueList.indexOf(removeId > -1)) {
+			queueList.splice(removeId, 1);
+			didRemove = true;
+			removeMessage = removeMessage + 'the queue';
+		}
+
+		if (activeVisitors.indexOf(removeId) > -1) {
+			activeVisitors.splice(removeId, 1);
+			if (didRemove) {
+				removeMessage = removeMessage + 'and the island';
 			}
 			else {
-				queueList.splice(removeId, 1);
-				msgEmbed('', `Removed <@${removeId}> from queue.`);
+				removeMessage = removeMessage + 'the island';
+				didRemove = true;
 			}
 		}
-		else {
-			activeVisitors.splice(removeId, 1);
-			msgEmbed('', `Removed <@${removeId}> from active visitors.`);
+
+		if (didRemove) {
+			msgEmbed('', removeMessage);
+			didRemove = false;
 		}
 	}
 
