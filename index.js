@@ -21,7 +21,6 @@ let hostID;
 let dodoCode;
 let maxVisitors;
 let maxQueueSize;
-let visitCount;
 
 //#endregion
 
@@ -84,7 +83,7 @@ client.on('message', message => {
 	//#endregion
 
 	//#region queueing functionality
-	if (message.content.startsWith('k!start')) {
+	if (command === 'start') {
 		// checks if an island is currently being hosted
 		if (active === false) {
 			hostID = messageAuthor;
@@ -92,10 +91,10 @@ client.on('message', message => {
 			maxVisitors = !isNaN(args[1]) ? Math.abs(args[1]) : 7; // 7 is max capacity for visitors in AC:NH
 			maxQueueSize = !isNaN(args[2]) ? Math.abs(args[2]) : 120; // 120 is a good ceiling for a PM turnip selling queue
 
-			if (!dodoCode || maxVisitors > 7 || maxQueueSize > 120) {
+			if (!dodoCode || maxVisitors > 7 || maxVisitors <= 0 || maxQueueSize > 120 || maxQueueSize <= 0) {
 				// queue arguments passed in message are unacceptable
 				msgEmbed('You requested a queue with missing or incorrect values, try again!',
-					`Format: \`k!start dodoCode concurrentVisitorLimit queueSizeLimit\`
+					`Format: \`k!start dodoCode [concurrentVisitorLimit] [queueSizeLimit]\`
 					\n Values: Concurrent Visitor Maximum = 7 | Queue Size Maximum = 120`);
 			}
 			else {
@@ -103,7 +102,8 @@ client.on('message', message => {
 				active = true;
 				printIsland();
 				message.channel.send('When ready, join the queue with: `k!join`');
-				console.log(`Island opening with maxVisitors: ${maxVisitors}`);
+				console.log(`[START]: Island opening with maxVisitors: ${maxVisitors}
+				\n and queue opened with maxQueueSize: ${maxQueueSize}`);
 			}
 		}
 		else {
@@ -114,21 +114,22 @@ client.on('message', message => {
 
 	if (command === 'end') {
 		const endID = messageAuthor;
-		console.log(`end command ${endID} host was ${hostID}`);
 
 		if (endID === hostID || message.member.hasPermission('ADMINISTRATOR')) {
 			// clear queue
-			queueList.fill(0);
-			msgEmbed('', `Queue has been cleared! Thank you for hosting <@${hostID}>!`);
+			queueList.splice(0, queueList.length);
+			activeVisitors.splice(0, activeVisitors.length);
+			console.log(`[END]: Clearing lists, queueList = ${queueList.length}, activeVisitors = ${activeVisitors.length}`);
+			msgEmbed('', `Queue and visitor list has been cleared! Thank you for hosting <@${hostID}>!`);
 
 			// allow new queue requests
 			active = false;
 			dodoCode = null;
-			console.log('queue cleared, room closed');
+			console.log('[END]: queue cleared, island closed');
 		}
 		else {
 			msgEmbed('Sorry you are not the host!');
-			console.log('non host tried to close room');
+			console.log('[END]: non host tried to close island');
 		}
 	}
 
@@ -136,7 +137,7 @@ client.on('message', message => {
 		printIsland();
 	}
 
-	if (command === 'queue') {
+	if (command === 'queue' || command === 'viewlist') {
 		if (queueList.length === 0) {
 			printQueueEmpty();
 		}
@@ -155,49 +156,76 @@ client.on('message', message => {
 	}
 
 	if (command === 'join') {
-		if (queueList.length + 1 <= maxQueueSize) {
-			const joinId = messageAuthor;
+		console.log(`[JOIN STARTED]: queue length = ${queueList.length} max size = ${maxQueueSize}
+		activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}`);
+		const joinId = messageAuthor;
 
-			// if join id is not found in qlist
-			if (queueList.indexOf(joinId) === -1) {
+		// if join id is not found in qlist
+		if (queueList.indexOf(joinId) === -1) {
+			// if queue list plus joiner hits maximum
+			if (queueList.length < maxQueueSize) {
+				// add joiner to queue
 				queueList.push(joinId);
-				msgEmbed('', `<@${joinId}> placed in queue list, you are #${queueList.length}`);
+				console.log(`[JOIN] placed ${joinId} in queue in ${queueList.length}`);
 
 				// if first in line
 				if (queueList.length === 1) {
-					message.channel.send('type `k!fly` to start');
+					// if island at capacity
+					if (activeVisitors.length === maxVisitors) {
+						printIslandFull(joinId);
+					}
+					else {
+						printClearForTakeoff(joinId);
+					}
 				}
-				console.log(`placed ${joinId} in queue in ${queueList.length}`);
+				else {
+					msgEmbed('', `<@${joinId}> placed in queue list, you are #${queueList.length}`);
+					console.log(`${joinId}> placed in queue list at position ${queueList.length}`);
+				}
 			}
 			else {
-				msgEmbed('', `<@${joinId}>, you are already in the queue!`);
+				msgEmbed('Sorry, the queue is full', `<@${messageAuthor}>, please try again when a spot opens up!`);
 			}
 		}
 		else {
-			msgEmbed('Sorry, the queue is full', `<@${messageAuthor}>, please try again when a spot opens up!`);
+			msgEmbed('', `<@${joinId}>, you are already in the queue!`);
 		}
+
+		console.log(`[JOIN FINISHED]: queue length = ${queueList.length} max size = ${maxQueueSize}
+		activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}\n`);
 	}
 
 	if (command === 'fly') {
+		console.log(`[FLY STARTED]: queue length = ${queueList.length} max size = ${maxQueueSize}
+		activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}`);
 		const flyerID = messageAuthor;
 
-		if (activeVisitors.length <= maxVisitors) {
-			// if first in queue list
-			if (flyerID === queueList[0]) {
-				printClearForTakeoff(flyerID);
-				console.log(`flying in ${flyerID}`);
+		if (queueList.indexOf(messageAuthor) >= 0) {
+			if (activeVisitors.length < maxVisitors) {
+				// if first in queue list
+				if (flyerID === queueList[0]) {
+					msgEmbed('', `Have a safe flight <@${flyerID}>! Remember to use \`k!landed\` when you arrive.`);
+					console.log(`[FLY]: flying in ${flyerID}`);
+				}
+				else {
+					msgEmbed('', `Sorry <@${flyerID}>, you are not first in line!`);
+					printList(1);
+				}
 			}
 			else {
-				msgEmbed('', `Sorry <@${flyerID}>, you are not first in line!`);
-				printList(1);
+				msgEmbed('', `Sorry <@${messageAuthor}>, The island is full! Please wait until someone leaves and try again.`);
 			}
 		}
 		else {
-			msgEmbed('', `Sorry <@${messageAuthor}>, The island is full! Please wait until someone leaves and try again.`);
+			msgEmbed('', `Sorry <@${messageAuthor}>, you are not in the queue. Use \`k!join\` to join!`);
 		}
+		console.log(`[FLY FINISHED]: queue length = ${queueList.length} max size = ${maxQueueSize}
+		activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}\n`);
 	}
 
-	if (command === 'landed') {
+	if (command === 'landed' || command === 'land') {
+		console.log(`[LANDED STARTED]: queue length = ${queueList.length} max size = ${maxQueueSize}
+		activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}`);
 		const currentId = messageAuthor;
 
 		// if author is first in queue
@@ -205,17 +233,14 @@ client.on('message', message => {
 			// move author to visitors list and remove from queue list
 			activeVisitors.push(currentId);
 			queueList.splice(0, 1);
-			visitCount = visitCount + 1;
-			console.log(`visit count:${visitCount}`);
 
-			const nextID = queueList[1]; // grab next person in queue list (if any)
-
+			const nextID = queueList[0]; // grab next person in queue list (if any)
 			if (!nextID) {
-				printQueueEmpty();
+				msgEmbed('', `Enjoy your stay on the island <@${messageAuthor}>, and don't forget to use \`k!returned\` when you've gone home!`);
+				console.log(`[LANDED] ${messageAuthor} landed on island`);
 			}
-			else if (visitCount === maxVisitors) {
-				msgEmbed('Island is now full, the next flier will be prompted once someone leaves.',
-					'\nVisitors please remember to enter `k!returned` once you\'ve left');
+			else if (activeVisitors.length >= maxVisitors) {
+				printIslandFull(nextID);
 			}
 			else {
 				printClearForTakeoff(nextID);
@@ -224,20 +249,23 @@ client.on('message', message => {
 		else {
 			msgEmbed('', `Sorry <@${currentId}>, you are not currently flying!`);
 		}
+		console.log(`[LANDED FINISHED]: queue length = ${queueList.length} max size = ${maxQueueSize} activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}\n`);
 	}
 
-	if (command === 'returned') {
+	if (command === 'returned' || command === 'return') {
+		console.log(`[RETURNED STARTED]: queue length = ${queueList.length} max size = ${maxQueueSize}
+		activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}`);
 		const returnId = messageAuthor;
 		const returnIdIndex = activeVisitors.indexOf(returnId);
 
 		if (returnIdIndex === -1) {
-			msgEmbed('', `Sorry <@${returnIdIndex[0]}>, you are not on the island`);
+			msgEmbed('', `Sorry <@${returnId}>, you are not on the island`);
 		}
 		else {
 			// remove id from visitors list
 			activeVisitors.splice(returnIdIndex, 1);
 			msgEmbed('', `<@${returnId}> has returned home`);
-			visitCount = visitCount - 1;
+			console.log(`[RETURNED]: ${returnId} has been removed from the active visitors list`);
 
 			// prompt next flier if anyone is on the list
 			if (queueList.length > 0) {
@@ -247,14 +275,16 @@ client.on('message', message => {
 				printQueueEmpty();
 			}
 		}
+		console.log(`[RETURNED FINISHED]: queue length = ${queueList.length} max size = ${maxQueueSize}
+		activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}\n`);
 	}
 
-	if (command === 'leave') {
+	if (command === 'leave' || command === 'exit' || command === 'quit') {
 		const leaveId = messageAuthor;
 		removeUser(leaveId);
 	}
 
-	if (command === 'remove') {
+	if (command === 'remove' || command === 'kick') {
 		if (hostID === messageAuthor || message.member.hasPermission('ADMINISTRATOR')) {
 			let kickId = message.mentions.users.first().toString();
 			kickId = kickId.replace(/\D/g, ''); // use regex to strip out non-digit characters
@@ -314,24 +344,29 @@ client.on('message', message => {
 
 	function printClearForTakeoff(clearedId) {
 		if (clearedId !== null && clearedId !== '') {
-			msgEmbed('', `<@${clearedId}> is flying! The dodo code once again is || ${dodoCode} ||
-			\nRemember to enter \`k!landed\` once you've touched down successfully!`);
-			console.log(`prompting next flier ${clearedId}`);
+			msgEmbed('', `<@${clearedId}> is cleared for takeoff! Use \`k!fly\` when you begin flying. Here's the dodo code again: || ${dodoCode} ||
+			\nRemember to enter \`k!landed\` once you've touched down.`);
 		}
 	}
 
 	function removeUser(removeId) {
 		let didRemove = false;
 		let removeMessage = `Removed <@${removeId}> from `;
+		const queueIndex = queueList.indexOf(removeId);
+		const visitorIndex = activeVisitors.indexOf(removeId);
 
-		if (queueList.indexOf(removeId > -1)) {
-			queueList.splice(removeId, 1);
+		console.log(`REMOVE FUNCTION: queueIndex = ${queueIndex} visitorIndex= ${visitorIndex}`);
+
+		if (queueIndex >= 0) {
+			queueList.splice(queueIndex, 1);
+			console.log(`REMOVE FUNCTION: ${removeId} removed from queue`);
 			didRemove = true;
 			removeMessage = removeMessage + 'the queue';
 		}
 
-		if (activeVisitors.indexOf(removeId) > -1) {
-			activeVisitors.splice(removeId, 1);
+		if (visitorIndex >= 0) {
+			activeVisitors.splice(visitorIndex, 1);
+			console.log(`REMOVE FUNCTION: ${removeId} removed from island`);
 			if (didRemove) {
 				removeMessage = removeMessage + 'and the island';
 			}
@@ -345,10 +380,19 @@ client.on('message', message => {
 			msgEmbed('', removeMessage);
 			didRemove = false;
 		}
+		else {
+			console.log(`REMOVE FUNCTION: ${removeId} not in queue or island`);
+		}
 	}
 
 	function printQueueEmpty() {
 		msgEmbed('The queue is now empty!', 'Use `k!end` to close the queue if desired.');
+	}
+
+	function printIslandFull(nextFlyer) {
+		msgEmbed('The island is at capacity!',
+			`<@${nextFlyer}> is on deck to fly next and will be notified when there is room.
+			\nVisitors please remember to enter \`k!returned\` once you've left the island.`);
 	}
 	//#endregion
 });
