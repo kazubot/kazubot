@@ -64,7 +64,7 @@ client.on('message', message => {
 			.setTitle('Queue Commands')
 			.setDescription('Hi, I\'m Kazuma bot! Ren and Spekkio built me.')
 			.addFields(
-				{ name:'\u200B', value:'`k!start dodocode`\n to start a queue as an island host\neg: k!start IS4BL' },
+				{ name:'\u200B', value:'`k!start dodocode [concurrentVisitorLimit] [queueSizeLimit]`\n to start a queue as an island host\neg: k!start IS4BL 4 20' },
 				{ name:'\u200B', value:'`k!end`\n to tell the bot you are closing your island. (empties queue)' },
 				{ name:'\u200B', value:'`k!join`\n to join the queue' },
 				{ name:'\u200B', value:'`k!fly`\n to tell the bot you are present and ready to fly in' },
