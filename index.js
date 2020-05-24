@@ -323,11 +323,6 @@ client.on('message', message => {
 	function removeUser(removeId) {
 		let didRemove = false;
 		let removeMessage = `Removed <@${removeId}> from `;
-		console.log(`user to remove: ${removeId}`);
-		console.log(`queue list: ${queueList.toString()}`);
-		console.log(`visitor list: ${activeVisitors.toString()}`);
-		console.log(`index lookup for queue check: ${queueList.indexOf(removeId)}`);
-		console.log(`index lookup for visitor check: ${activeVisitors.indexOf(removeId)}`);
 
 		if (queueList.indexOf(removeId > -1)) {
 			queueList.splice(removeId, 1);
