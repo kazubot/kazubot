@@ -243,7 +243,8 @@ client.on('message', message => {
 				printIslandFull(nextID);
 			}
 			else {
-				printClearForTakeoff(nextID);
+				msgEmbed('', `<@${nextID}>, get ready! You'll be cleared to fly in 10 seconds to avoid airport congestion.`);
+				setTimeout(() => {printClearForTakeoff(nextID); }, 10000);
 			}
 		}
 		else {
@@ -381,6 +382,7 @@ client.on('message', message => {
 			didRemove = false;
 		}
 		else {
+			msgEmbed('', `Sorry, ${messageAuthor}, you are not in a queue or on an island.`);
 			console.log(`REMOVE FUNCTION: ${removeId} not in queue or island`);
 		}
 	}
