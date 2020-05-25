@@ -1,10 +1,6 @@
 # vscode
 .vscode
 
-# npm
-node_modules
-.npmrc
-
 # Mac
 .DS_Store
 
