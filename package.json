@@ -4,12 +4,16 @@
   "description": "a bot for animal crossing new horizons discord servers",
   "main": "index.js",
   "dependencies": {
-    "eslint": "^7.1.0",
     "discord.js": "^12.2.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^7.1.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint src/js",
+    "test": "mocha",
+    "bot": "node src/js/bot.js"
   },
   "repository": {
     "type": "git",
