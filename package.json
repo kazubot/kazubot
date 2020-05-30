@@ -2,7 +2,7 @@
   "name": "kazubot",
   "version": "1.0.0",
   "description": "a bot for animal crossing new horizons discord servers",
-  "main": "index.js",
+  "main": "/src/js/bot.js",
   "dependencies": {
     "discord.js": "^12.2.0",
     "mocha": "^7.2.0"
@@ -13,8 +13,9 @@
   },
   "scripts": {
     "lint": "eslint src/js",
-    "test": "mocha",
-    "bot": "node src/js/bot.js"
+    "test": "secrethub run --var env=local mocha",
+    "local": "secrethub run --var env=local pm2 start src/js/bot.js --time",
+    "cloud": "secrethub run --var env=cloud pm2 start src/js/bot.js --time"
   },
   "repository": {
     "type": "git",

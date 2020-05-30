@@ -1,21 +1,26 @@
 // kazubot is a discord bot for handling queuing and other acnh related tasks
 
 //#region initialization
-
-const config = require('../../config.json');
+console.log('Starting kazubot...');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 exports.client = client;
+
+const queueList = new Array();
+const activeVisitors = new Array();
+const prefix = 'k!';
+
+// grabs configs from secrethub.env
+const token = process.env.TOKEN;
+const buffer = process.env.QUEUE_BUFFER;
+
+console.log('Queue buffer set to:  ' + (buffer / 1000));
 
 client.once('ready', () => {
 	console.log('Ready!');
 });
 
-client.login(config.token);
-
-const queueList = new Array();
-const activeVisitors = new Array();
-const prefix = 'k!';
+client.login(token);
 
 let active = false;
 let hostID;
@@ -243,8 +248,8 @@ client.on('message', message => {
 				printIslandFull(nextID);
 			}
 			else {
-				msgEmbed('', `<@${nextID}>, get ready! You'll be cleared to fly in 10 seconds to avoid airport congestion.`);
-				setTimeout(() => {printClearForTakeoff(nextID); }, 10000);
+				msgEmbed('', `<@${nextID}>, get ready! You'll be cleared to fly in ` (buffer / 1000) ` seconds to avoid airport congestion.`);
+				setTimeout(() => {printClearForTakeoff(nextID); }, buffer);
 			}
 		}
 		else {
