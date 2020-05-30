@@ -12,7 +12,7 @@ const prefix = 'k!';
 
 // grabs configs from secrethub.env
 const token = process.env.TOKEN;
-const buffer = process.env.QUEUE_BUFFER;
+const buffer = process.env.QUEUE_BUFFER || 10000;
 
 console.log('Queue buffer set to:  ' + (buffer / 1000));
 
