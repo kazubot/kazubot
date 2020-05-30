@@ -13,7 +13,8 @@
   },
   "scripts": {
     "lint": "eslint src/js",
-    "test": "secrethub run --var env=local mocha",
+    "testLocal": "secrethub run --var env=local mocha",
+    "testGithub": "echo $TOKEN | mocha",
     "local": "secrethub run --var env=local pm2 start src/js/bot.js --time",
     "cloud": "secrethub run --var env=cloud pm2 start src/js/bot.js --time"
   },
