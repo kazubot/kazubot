@@ -26,12 +26,13 @@ jobs:
     - run: npm ci
     - run: npm run lint
     - name: Build Docker image
-      run: docker build -t mattdonatelli/kazubot:${GITHUB_SHA:0:7} -e env=local .
+      run: docker build -t mattdonatelli/kazubot:${GITHUB_SHA:0:7} .
     - uses: secrethub/actions/env-export@v0.1.0
       env:
         SECRETHUB_CREDENTIAL: ${{ secrets.SECRETHUB_CREDENTIAL }}
         DOCKER_USERNAME: secrethub://mattdonatelli/kazubot/docker/username
         DOCKER_PASSWORD: secrethub://mattdonatelli/kazubot/docker/password
+        ENVIRONMENT: local
     - name: Publish Docker image
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
