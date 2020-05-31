@@ -5,4 +5,4 @@ COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
 RUN npm install --production --silent && mv node_modules ../
 COPY . .
 EXPOSE 3000
-CMD secrethub run --var env=local node src/js/bot.js
+CMD secrethub run --var env=local -- node src/js/bot.js

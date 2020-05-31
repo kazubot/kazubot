@@ -10,11 +10,11 @@ const queueList = new Array();
 const activeVisitors = new Array();
 const prefix = 'k!';
 
-// grabs configs from secrethub.env
+// grabs token from secrethub.env
 const token = process.env.TOKEN;
-const buffer = process.env.QUEUE_BUFFER || 10000;
 
-console.log('Queue buffer set to:  ' + (buffer / 1000));
+const buffer = 10000;
+console.log('Queue buffer set to:  ' + (buffer / 1000) + ' seconds.');
 
 client.once('ready', () => {
 	console.log('Ready!');
