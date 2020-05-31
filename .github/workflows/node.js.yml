@@ -32,7 +32,6 @@ jobs:
         SECRETHUB_CREDENTIAL: ${{ secrets.SECRETHUB_CREDENTIAL }}
         DOCKER_USERNAME: secrethub://mattdonatelli/kazubot/docker/username
         DOCKER_PASSWORD: secrethub://mattdonatelli/kazubot/docker/password
-        ENVIRONMENT: local
     - name: Publish Docker image
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin

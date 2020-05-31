@@ -5,7 +5,7 @@ services:
     image: kazubot
     build: .
     environment:
-      ENV: local
+      ENV: lab
     ports:
       - 3000
       - 9229:9229

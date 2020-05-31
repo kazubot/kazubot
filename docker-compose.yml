@@ -5,6 +5,6 @@ services:
     image: kazubot
     build: .
     environment:
-      ENV: cloud
+      ENV: prod
     ports:
       - 3000
