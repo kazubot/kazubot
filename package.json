@@ -12,12 +12,7 @@
     "eslint": "^7.1.0"
   },
   "scripts": {
-    "lint": "eslint src/js",
-    "testLocal": "secrethub run --var env=local mocha",
-    "testGithub": "echo $TOKEN | mocha",
-    "local": "secrethub run --var env=local pm2 start src/js/bot.js --time",
-    "cloud": "secrethub run --var env=cloud pm2 start src/js/bot.js --time",
-    "start": "node src/js/bot.js"
+    "lint": "eslint src/js"
   },
   "repository": {
     "type": "git",
