@@ -12,27 +12,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [12.x]
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npm run lint
-      - name: Build Docker image
-        run: docker build -t mattdonatelli/kazubot:${GITHUB_SHA:0:7} .
-      - uses: secrethub/actions/env-export@v0.1.0
-        env:
-          SECRETHUB_CREDENTIAL: ${{ secrets.SECRETHUB_CREDENTIAL }}
-          DOCKER_USERNAME: secrethub://mattdonatelli/kazubot/docker/username
-          DOCKER_PASSWORD: secrethub://mattdonatelli/kazubot/docker/password
-      - name: Publish Docker image
-        run: |
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          docker push mattdonatelli/kazubot:${GITHUB_SHA:0:7}
+    - run: npm ci
+    - run: npm run lint
+    - name: Build Docker image
+      run: docker build -t mattdonatelli/kazubot:${GITHUB_SHA:0:7} .
+    - uses: secrethub/actions/env-export@v0.1.0
+      env:
+        SECRETHUB_CREDENTIAL: ${{ secrets.SECRETHUB_CREDENTIAL }}
+        DOCKER_USERNAME: secrethub://mattdonatelli/kazubot/docker/username
+        DOCKER_PASSWORD: secrethub://mattdonatelli/kazubot/docker/password
+    - name: Publish Docker image
+      run: |
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        docker push mattdonatelli/kazubot:${GITHUB_SHA:0:7}
