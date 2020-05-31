@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  kazubot:
+    image: kazubot
+    build: .
+    environment:
+      ENV: cloud
+    ports:
+      - 3000
