@@ -33,6 +33,12 @@ jobs:
         DOCKER_USERNAME: secrethub://mattdonatelli/kazubot/docker/username
         DOCKER_PASSWORD: secrethub://mattdonatelli/kazubot/docker/password
         SECRETHUB_TOKEN_PATH: secrethub://mattdonatelli/kazubot/lab/token
+    - name: Functional tests
+    - run: |
+        docker run -d -e SECRETHUB_TOKEN_PATH=mattdonatelli/kazubot/lab/token -e SECRETHUB_CREDENTIAL=$(cat $HOME/.secrethub/credential) -- mattdonatelli/kazubot 
+        secrethub run -e TOKEN=$SECRETHUB_TOKEN_PATH -- mocha
+      env: 
+        SECRETHUB_TOKEN_PATH: secrethub://mattdonatelli/kazubot/lab/token
     - name: Publish Docker image
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
