@@ -36,7 +36,7 @@ jobs:
     - name: Functional tests
       run: |
         docker run -d -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
-        secrethub run -e TOKEN=$SECRETHUB_TOKEN_PATH -- mocha
+        mocha
     - uses: secrethub/actions/env-export@v0.1.0
       env:
         SECRETHUB_CREDENTIAL: ${{ secrets.SECRETHUB_CREDENTIAL }}
