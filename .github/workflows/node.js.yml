@@ -37,6 +37,7 @@ jobs:
     - run: |
         docker run -d -e SECRETHUB_TOKEN_PATH=mattdonatelli/kazubot/lab/token -e SECRETHUB_CREDENTIAL=$(cat $HOME/.secrethub/credential) -- mattdonatelli/kazubot 
         secrethub run -e TOKEN=$SECRETHUB_TOKEN_PATH -- mocha
+    - uses: secrethub/actions/env-export@v0.1.0
       env: 
         SECRETHUB_TOKEN_PATH: secrethub://mattdonatelli/kazubot/lab/token
     - name: Publish Docker image
