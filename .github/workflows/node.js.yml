@@ -23,8 +23,6 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Install dependencies
-      run: npm install
     - name: Run continuous integration
       run: npm ci
     - name: Run eslint
@@ -40,7 +38,7 @@ jobs:
     - name: Run Docker and Functional Tests
       run: |
         docker run -d -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
-        npm run mocha
+        npm run test
     - name: Publish Docker image
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
