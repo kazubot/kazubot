@@ -5,17 +5,19 @@ console.log('Starting kazubot...');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 exports.client = client;
-
-const queueList = new Array();
-const activeVisitors = new Array();
 const prefix = 'k!';
 
-// grabs token from secrethub.env
+// grab token from docker secrets
 const token = process.env.TOKEN;
+console.log('DELETEME - TOKEN: ' + token);
 
+// setting up queue variables
+const queueList = new Array();
+const activeVisitors = new Array();
 const buffer = 10000;
 console.log('Queue buffer set to:  ' + (buffer / 1000) + ' seconds.');
 
+// running discord client with token
 client.once('ready', () => {
 	console.log('Ready!');
 });
