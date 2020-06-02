@@ -35,14 +35,8 @@ jobs:
         SECRETHUB_TOKEN_PATH: secrethub://mattdonatelli/kazubot/lab/token
     - name: Functional tests
       run: |
-        docker run -d -e SECRETHUB_TOKEN_PATH=mattdonatelli/kazubot/lab/token -e SECRETHUB_CREDENTIAL=$(cat $HOME/.secrethub/credential) -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
-        mocha
-    - uses: secrethub/actions/env-export@v0.1.0
-      env:
-        SECRETHUB_CREDENTIAL: ${{ secrets.SECRETHUB_CREDENTIAL }}
-        DOCKER_USERNAME: secrethub://mattdonatelli/kazubot/docker/username
-        DOCKER_PASSWORD: secrethub://mattdonatelli/kazubot/docker/password
-        SECRETHUB_TOKEN_PATH: secrethub://mattdonatelli/kazubot/lab/token
+        docker run -d -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
+        npm run mocha
     - name: Publish Docker image
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
