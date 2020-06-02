@@ -23,9 +23,13 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npm run lint
-    - name: Build Docker image
+    - name: Install dependencies
+      run: npm install
+    - name: Run continuous integration
+      run: npm ci
+    - name: Run eslint
+      run: npm run lint
+    - name: Build Docker Image
       run: docker build -t mattdonatelli/kazubot:${GITHUB_SHA:0:7} .
     - uses: secrethub/actions/env-export@v0.1.0
       env:
@@ -33,7 +37,7 @@ jobs:
         DOCKER_USERNAME: secrethub://mattdonatelli/kazubot/docker/username
         DOCKER_PASSWORD: secrethub://mattdonatelli/kazubot/docker/password
         SECRETHUB_TOKEN_PATH: secrethub://mattdonatelli/kazubot/lab/token
-    - name: Functional tests
+    - name: Run Docker and Functional Tests
       run: |
         docker run -d -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
         npm run mocha
