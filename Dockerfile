@@ -14,8 +14,7 @@ WORKDIR /usr/src/app
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
 
 # Install node dependencies
-RUN npm install --production --silent && mv node_modules ../
-RUN npm install pm2 -g --no-optional
+RUN npm install
 
 COPY . .
 

@@ -9,7 +9,6 @@ const prefix = 'k!';
 
 // grab token from docker secrets
 const token = process.env.TOKEN;
-console.log('DELETEME - TOKEN: ' + token);
 
 // setting up queue variables
 const queueList = new Array();
