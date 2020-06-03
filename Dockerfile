@@ -7,6 +7,7 @@ RUN apk update && apk add --repository https://alpine.secrethub.io/alpine/edge/m
 # Environment variables
 ENV SECRETHUB_CREDENTIAL = ""
 ENV SECRETHUB_TOKEN_PATH = "secrethub://username/repo/token"
+ENV SCRIPT = "bot"
 
 # Setup working directory
 WORKDIR /usr/src/app
@@ -20,4 +21,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD secrethub run -e TOKEN=$SECRETHUB_TOKEN_PATH -- npm run bot
+CMD secrethub run -e TOKEN=$SECRETHUB_TOKEN_PATH -- npm run $SCRIPT

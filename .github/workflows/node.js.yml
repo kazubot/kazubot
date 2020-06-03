@@ -36,9 +36,7 @@ jobs:
         DOCKER_PASSWORD: secrethub://mattdonatelli/kazubot/docker/password
         SECRETHUB_TOKEN_PATH: secrethub://mattdonatelli/kazubot/lab/token
     - name: Run Docker and Functional Tests
-      run: |
-        docker run -d -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
-        secrethub run -e TOKEN=$SECRETHUB_TOKEN_PATH -- npm run test
+      run: docker run -d -e SCRIPT=test -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
     - name: Publish Docker image
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
