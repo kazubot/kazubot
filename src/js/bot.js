@@ -1,27 +1,33 @@
 // kazubot is a discord bot for handling queuing and other acnh related tasks
 
 //#region initialization
-
-const config = require('./config.json');
+console.log('Starting kazubot...');
 const Discord = require('discord.js');
 const client = new Discord.Client();
+exports.client = client;
+const prefix = 'k!';
 
+// grab token from docker secrets
+const token = process.env.TOKEN;
+
+// setting up queue variables
+const queueList = new Array();
+const activeVisitors = new Array();
+const buffer = 10000;
+console.log('Queue buffer set to:  ' + (buffer / 1000) + ' seconds.');
+
+// running discord client with token
 client.once('ready', () => {
 	console.log('Ready!');
 });
 
-client.login(config.token);
-
-const queueList = new Array();
-const activeVisitors = new Array();
-const prefix = 'k!';
+client.login(token);
 
 let active = false;
 let hostID;
 let dodoCode;
 let maxVisitors;
 let maxQueueSize;
-
 //#endregion
 
 // listening for messages on monitored channels, .on runs multiple times
@@ -243,8 +249,8 @@ client.on('message', message => {
 				printIslandFull(nextID);
 			}
 			else {
-				msgEmbed('', `<@${nextID}>, get ready! You'll be cleared to fly in 10 seconds to avoid airport congestion.`);
-				setTimeout(() => {printClearForTakeoff(nextID); }, 10000);
+				msgEmbed('', `<@${nextID}>, get ready! You'll be cleared to fly in ` (buffer / 1000) ` seconds to avoid airport congestion.`);
+				setTimeout(() => {printClearForTakeoff(nextID); }, buffer);
 			}
 		}
 		else {
