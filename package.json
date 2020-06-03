@@ -14,7 +14,7 @@
   },
   "scripts": {
     "lint": "eslint src/js",
-    "test": "mocha",
+    "test": "mocha --reporter spec --recursive",
     "bot": "pm2-runtime src/js/bot.js"
   },
   "repository": {
