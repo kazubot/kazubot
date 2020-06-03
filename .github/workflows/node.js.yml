@@ -37,7 +37,7 @@ jobs:
         SECRETHUB_TOKEN_PATH: secrethub://mattdonatelli/kazubot/lab/token
     - name: Run Docker and Functional Tests
       run: docker run -e SCRIPT=test -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
-      - uses: secrethub/actions/env-export@v0.1.0
+    - uses: secrethub/actions/env-export@v0.1.0
       env:
         SECRETHUB_CREDENTIAL: ${{ secrets.SECRETHUB_CREDENTIAL }}
         DOCKER_USERNAME: secrethub://mattdonatelli/kazubot/docker/username
