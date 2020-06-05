@@ -13,7 +13,7 @@ const token = process.env.TOKEN;
 // setting up queue variables
 const queueList = new Array();
 const activeVisitors = new Array();
-let buffer = 10000;
+let buffer = 15000;
 exports.buffer = buffer;
 console.log('Queue buffer set to:  ' + (buffer / 1000) + ' seconds.');
 
