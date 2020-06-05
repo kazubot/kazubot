@@ -13,7 +13,8 @@ const token = process.env.TOKEN;
 // setting up queue variables
 const queueList = new Array();
 const activeVisitors = new Array();
-const buffer = 10000;
+let buffer = 10000;
+exports.buffer = buffer;
 console.log('Queue buffer set to:  ' + (buffer / 1000) + ' seconds.');
 
 // running discord client with token
@@ -308,6 +309,10 @@ client.on('message', message => {
 			msgEmbed('Only the queue host or server admins can remove members.');
 		}
 	}
+
+	if (command === 'buffer' && message.member.hasPermission('ADMINISTRATOR')) {
+		setBuffer(args[0]);
+	}
 	//#endregion
 
 	//#region repeated functions
@@ -402,5 +407,24 @@ client.on('message', message => {
 			`<@${nextFlyer}> is on deck to fly next and will be notified when there is room.
 			\nVisitors please remember to enter \`k!returned\` once you've left the island.`);
 	}
+
+	function setBuffer(timeInSeconds) {
+		timeInSeconds = Math.abs(timeInSeconds);
+		if (Number.isInteger(timeInSeconds) && timeInSeconds <= 60) {
+			buffer = timeInSeconds * 1000;
+			console.log('buffer set to: ' + buffer);
+			msgEmbed('', 'Setting flight buffer time to: ' + (buffer / 1000) + ' seconds.');
+		}
+		else {
+			// queue arguments passed in message are unacceptable
+			msgEmbed('You requested a buffer time with missing or incorrect values, try again!',
+				'Format: `k!buffer timeInSeconds (60 second maximum)');
+
+			throw new Error('setBuffer() expects an integer between 0 and 60 inclusive');
+		}
+		return setBuffer();
+	}
+
+	exports.setBuffer = setBuffer;
 	//#endregion
 });
