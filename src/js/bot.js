@@ -82,6 +82,7 @@ client.on('message', message => {
 				{ name:'\u200B', value:'`k!queue`\n to see who is queued to visit an island.' },
 				{ name:'\u200B', value:'`k!visitors`\n to see a list of island visitors.' },
 				{ name:'\u200B', value:'`k!remove`\n to remove a person from the queue and island (host/admin).' },
+				{ name:'\u200B', value:'`k!buffer timeInSeconds`\n to adjust flight clearence buffer from 0 - 60 seconds inclusive (admin-only).' },
 			)
 			.setFooter('Ren K#6666 & Spekkio#6969');
 
