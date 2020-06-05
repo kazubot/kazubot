@@ -24,6 +24,8 @@ client.once('ready', () => {
 
 client.login(token);
 
+let latestMessage;
+
 let active = false;
 let hostID;
 let dodoCode;
@@ -31,14 +33,15 @@ let maxVisitors;
 let maxQueueSize;
 //#endregion
 
-// listening for messages on monitored channels, .on runs multiple times
+// listening for messages on monitored channels, triggers functions based on k!command
 client.on('message', message => {
 	// ignore bot messages
 	if (message.author.bot) {
 		return;
 	}
 
-	// parse message into author, command, and arguments
+	// parse message into author, command, and arguments and make available to functions
+	latestMessage = message;
 	const messageAuthor = message.author.id;
 	const args = message.content.slice(prefix.length).trim().split(/ +/g);
 	const command = args.shift().toLowerCase();
@@ -49,7 +52,7 @@ client.on('message', message => {
 
 		// 24h into 12
 		if (today.getHours() > 12) {
-			msgEmbed(
+			postToChannel(
 				':)',
 				`Hi <@${messageAuthor}> I'm online now!\n\n ${today.toDateString()}, ${today.getHours() - 12}:${today.getMinutes()}PM`,
 				'https://pbs.twimg.com/media/EW-7berUMAEMNke?format=png',
@@ -57,7 +60,7 @@ client.on('message', message => {
 		}
 		// 12h is AM
 		else {
-			msgEmbed(
+			postToChannel(
 				':)',
 				`Hi <@${messageAuthor}> I'm online!\n\n ${today.toDateString()}, ${today.getHours()}:${today.getMinutes()}AM`,
 				'https://pbs.twimg.com/media/EW-7berUMAEMNke?format=png',
@@ -101,7 +104,7 @@ client.on('message', message => {
 
 			if (!dodoCode || maxVisitors > 7 || maxVisitors <= 0 || maxQueueSize > 120 || maxQueueSize <= 0) {
 				// queue arguments passed in message are unacceptable
-				msgEmbed('You requested a queue with missing or incorrect values, try again!',
+				postToChannel('You requested a queue with missing or incorrect values, try again!',
 					`Format: \`k!start dodoCode [concurrentVisitorLimit] [queueSizeLimit]\`
 					\n Values: Concurrent Visitor Maximum = 7 | Queue Size Maximum = 120`);
 			}
@@ -128,7 +131,7 @@ client.on('message', message => {
 			queueList.splice(0, queueList.length);
 			activeVisitors.splice(0, activeVisitors.length);
 			console.log(`[END]: Clearing lists, queueList = ${queueList.length}, activeVisitors = ${activeVisitors.length}`);
-			msgEmbed('', `Queue and visitor list has been cleared! Thank you for hosting <@${hostID}>!`);
+			postToChannel('', `Queue and visitor list has been cleared! Thank you for hosting <@${hostID}>!`);
 
 			// allow new queue requests
 			active = false;
@@ -136,7 +139,7 @@ client.on('message', message => {
 			console.log('[END]: queue cleared, island closed');
 		}
 		else {
-			msgEmbed('Sorry you are not the host!');
+			postToChannel('Sorry you are not the host!');
 			console.log('[END]: non host tried to close island');
 		}
 	}
@@ -156,7 +159,7 @@ client.on('message', message => {
 
 	if (command === 'visitors') {
 		if (activeVisitors.length === 0) {
-			msgEmbed('', 'There are no visitors on the island.');
+			postToChannel('', 'There are no visitors on the island.');
 		}
 		else {
 			printList(0);
@@ -187,16 +190,16 @@ client.on('message', message => {
 					}
 				}
 				else {
-					msgEmbed('', `<@${joinId}> placed in queue list, you are #${queueList.length}`);
+					postToChannel('', `<@${joinId}> placed in queue list, you are #${queueList.length}`);
 					console.log(`${joinId}> placed in queue list at position ${queueList.length}`);
 				}
 			}
 			else {
-				msgEmbed('Sorry, the queue is full', `<@${messageAuthor}>, please try again when a spot opens up!`);
+				postToChannel('Sorry, the queue is full', `<@${messageAuthor}>, please try again when a spot opens up!`);
 			}
 		}
 		else {
-			msgEmbed('', `<@${joinId}>, you are already in the queue!`);
+			postToChannel('', `<@${joinId}>, you are already in the queue!`);
 		}
 
 		console.log(`[JOIN FINISHED]: queue length = ${queueList.length} max size = ${maxQueueSize}
@@ -212,20 +215,20 @@ client.on('message', message => {
 			if (activeVisitors.length < maxVisitors) {
 				// if first in queue list
 				if (flyerID === queueList[0]) {
-					msgEmbed('', `Have a safe flight <@${flyerID}>! Remember to use \`k!landed\` when you arrive.`);
+					postToChannel('', `Have a safe flight <@${flyerID}>! Remember to use \`k!landed\` when you arrive.`);
 					console.log(`[FLY]: flying in ${flyerID}`);
 				}
 				else {
-					msgEmbed('', `Sorry <@${flyerID}>, you are not first in line!`);
+					postToChannel('', `Sorry <@${flyerID}>, you are not first in line!`);
 					printList(1);
 				}
 			}
 			else {
-				msgEmbed('', `Sorry <@${messageAuthor}>, The island is full! Please wait until someone leaves and try again.`);
+				postToChannel('', `Sorry <@${messageAuthor}>, The island is full! Please wait until someone leaves and try again.`);
 			}
 		}
 		else {
-			msgEmbed('', `Sorry <@${messageAuthor}>, you are not in the queue. Use \`k!join\` to join!`);
+			postToChannel('', `Sorry <@${messageAuthor}>, you are not in the queue. Use \`k!join\` to join!`);
 		}
 		console.log(`[FLY FINISHED]: queue length = ${queueList.length} max size = ${maxQueueSize}
 		activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}\n`);
@@ -244,19 +247,19 @@ client.on('message', message => {
 
 			const nextID = queueList[0]; // grab next person in queue list (if any)
 			if (!nextID) {
-				msgEmbed('', `Enjoy your stay on the island <@${messageAuthor}>, and don't forget to use \`k!returned\` when you've gone home!`);
+				postToChannel('', `Enjoy your stay on the island <@${messageAuthor}>, and don't forget to use \`k!returned\` when you've gone home!`);
 				console.log(`[LANDED] ${messageAuthor} landed on island`);
 			}
 			else if (activeVisitors.length >= maxVisitors) {
 				printIslandFull(nextID);
 			}
 			else {
-				msgEmbed('', `<@${nextID}>, get ready! You'll be cleared to fly in ` (buffer / 1000) ` seconds to avoid airport congestion.`);
+				postToChannel('', `<@${nextID}>, get ready! You'll be cleared to fly in ` (buffer / 1000) ` seconds to avoid airport congestion.`);
 				setTimeout(() => {printClearForTakeoff(nextID); }, buffer);
 			}
 		}
 		else {
-			msgEmbed('', `Sorry <@${currentId}>, you are not currently flying!`);
+			postToChannel('', `Sorry <@${currentId}>, you are not currently flying!`);
 		}
 		console.log(`[LANDED FINISHED]: queue length = ${queueList.length} max size = ${maxQueueSize} activeVisitors = ${activeVisitors.length} max visitors = ${maxVisitors}\n`);
 	}
@@ -268,12 +271,12 @@ client.on('message', message => {
 		const returnIdIndex = activeVisitors.indexOf(returnId);
 
 		if (returnIdIndex === -1) {
-			msgEmbed('', `Sorry <@${returnId}>, you are not on the island`);
+			postToChannel('', `Sorry <@${returnId}>, you are not on the island`);
 		}
 		else {
 			// remove id from visitors list
 			activeVisitors.splice(returnIdIndex, 1);
-			msgEmbed('', `<@${returnId}> has returned home`);
+			postToChannel('', `<@${returnId}> has returned home`);
 			console.log(`[RETURNED]: ${returnId} has been removed from the active visitors list`);
 
 			// prompt next flier if anyone is on the list
@@ -303,11 +306,11 @@ client.on('message', message => {
 				kickId = null;
 			}
 			else {
-				msgEmbed('Please @mention a user to remove (host/admin capability)');
+				postToChannel('Please @mention a user to remove (host/admin capability)');
 			}
 		}
 		else {
-			msgEmbed('Only the queue host or server admins can remove members.');
+			postToChannel('Only the queue host or server admins can remove members.');
 		}
 	}
 
@@ -315,117 +318,117 @@ client.on('message', message => {
 		setBuffer(args[0]);
 	}
 	//#endregion
+});
 
-	//#region repeated functions
-	function msgEmbed(title, desc, thumbnail) {
-		const Message = new Discord.MessageEmbed()
-			.setColor('#FF8362')
-			.setTitle(title)
-			.setDescription(desc)
-			.setThumbnail(thumbnail);
-		message.channel.send(Message);
+//#region functions
+function postToChannel(title, desc, thumbnail) {
+	const Message = new Discord.MessageEmbed()
+		.setColor('#FF8362')
+		.setTitle(title)
+		.setDescription(desc)
+		.setThumbnail(thumbnail);
+	latestMessage.channel.send(Message);
+}
+
+function printList(listType = 0) {
+	// prints queue if list type is 0, else prints visitor list if 1
+	const userID = listType ? queueList.values() : activeVisitors.values();
+	let listMessage = listType ? 'Queue order is:' : 'Visitor(s) on island:';
+	let mention;
+	let i = 1;
+
+	for (const display of userID) {
+		mention = `<@${display}>`;
+		listMessage = listMessage + '\n' + i + ': ' + mention;
+		i++;
 	}
+	postToChannel('', listMessage);
+}
 
-	function printList(listType = 0) {
-		// prints queue if list type is 0, else prints visitor list if 1
-		const userID = listType ? queueList.values() : activeVisitors.values();
-		let listMessage = listType ? 'Queue order is:' : 'Visitor(s) on island:';
-		let mention;
-		let i = 1;
-
-		for (const display of userID) {
-			mention = `<@${display}>`;
-			listMessage = listMessage + '\n' + i + ': ' + mention;
-			i++;
-		}
-		msgEmbed('', listMessage);
-	}
-
-	function printIsland() {
-		if (active === true) {
-			msgEmbed('Island opened with queue!',
-				`**Dodo code: ${dodoCode}**
+function printIsland() {
+	if (active === true) {
+		postToChannel('Island opened with queue!',
+			`**Dodo code: ${dodoCode}**
 				\nHost: <@${hostID}>
 				\nCurrent visitors: ${activeVisitors.length}
 				\nMax concurrent visitors: ${maxVisitors}
 				\nMax queue size: ${maxQueueSize}`);
-		}
-		else {
-			msgEmbed('There is no island queue open right now.');
-		}
 	}
+	else {
+		postToChannel('There is no island queue open right now.');
+	}
+}
 
-	function printClearForTakeoff(clearedId) {
-		if (clearedId !== null && clearedId !== '') {
-			msgEmbed('', `<@${clearedId}> is cleared for takeoff! Use \`k!fly\` when you begin flying. Here's the dodo code again: || ${dodoCode} ||
+function printClearForTakeoff(clearedId) {
+	if (clearedId !== null && clearedId !== '') {
+		postToChannel('', `<@${clearedId}> is cleared for takeoff! Use \`k!fly\` when you begin flying. Here's the dodo code again: || ${dodoCode} ||
 			\nRemember to enter \`k!landed\` once you've touched down.`);
-		}
+	}
+}
+
+function removeUser(removeId) {
+	let didRemove = false;
+	let removeMessage = `Removed <@${removeId}> from `;
+	const queueIndex = queueList.indexOf(removeId);
+	const visitorIndex = activeVisitors.indexOf(removeId);
+
+	console.log(`REMOVE FUNCTION: queueIndex = ${queueIndex} visitorIndex= ${visitorIndex}`);
+
+	if (queueIndex >= 0) {
+		queueList.splice(queueIndex, 1);
+		console.log(`REMOVE FUNCTION: ${removeId} removed from queue`);
+		didRemove = true;
+		removeMessage = removeMessage + 'the queue';
 	}
 
-	function removeUser(removeId) {
-		let didRemove = false;
-		let removeMessage = `Removed <@${removeId}> from `;
-		const queueIndex = queueList.indexOf(removeId);
-		const visitorIndex = activeVisitors.indexOf(removeId);
-
-		console.log(`REMOVE FUNCTION: queueIndex = ${queueIndex} visitorIndex= ${visitorIndex}`);
-
-		if (queueIndex >= 0) {
-			queueList.splice(queueIndex, 1);
-			console.log(`REMOVE FUNCTION: ${removeId} removed from queue`);
-			didRemove = true;
-			removeMessage = removeMessage + 'the queue';
-		}
-
-		if (visitorIndex >= 0) {
-			activeVisitors.splice(visitorIndex, 1);
-			console.log(`REMOVE FUNCTION: ${removeId} removed from island`);
-			if (didRemove) {
-				removeMessage = removeMessage + 'and the island';
-			}
-			else {
-				removeMessage = removeMessage + 'the island';
-				didRemove = true;
-			}
-		}
-
+	if (visitorIndex >= 0) {
+		activeVisitors.splice(visitorIndex, 1);
+		console.log(`REMOVE FUNCTION: ${removeId} removed from island`);
 		if (didRemove) {
-			msgEmbed('', removeMessage);
-			didRemove = false;
+			removeMessage = removeMessage + 'and the island';
 		}
 		else {
-			msgEmbed('', `Sorry, ${messageAuthor}, you are not in a queue or on an island.`);
-			console.log(`REMOVE FUNCTION: ${removeId} not in queue or island`);
+			removeMessage = removeMessage + 'the island';
+			didRemove = true;
 		}
 	}
 
-	function printQueueEmpty() {
-		msgEmbed('The queue is now empty!', 'Use `k!end` to close the queue if desired.');
+	if (didRemove) {
+		postToChannel('', removeMessage);
+		didRemove = false;
 	}
+	else {
+		postToChannel('', 'Sorry, you are not in a queue or on an island.');
+		console.log(`REMOVE FUNCTION: ${removeId} not in queue or island`);
+	}
+}
 
-	function printIslandFull(nextFlyer) {
-		msgEmbed('The island is at capacity!',
-			`<@${nextFlyer}> is on deck to fly next and will be notified when there is room.
+function printQueueEmpty() {
+	postToChannel('The queue is now empty!', 'Use `k!end` to close the queue if desired.');
+}
+
+function printIslandFull(nextFlyer) {
+	postToChannel('The island is at capacity!',
+		`<@${nextFlyer}> is on deck to fly next and will be notified when there is room.
 			\nVisitors please remember to enter \`k!returned\` once you've left the island.`);
+}
+
+function setBuffer(timeInSeconds) {
+	timeInSeconds = Math.abs(timeInSeconds);
+	if (Number.isInteger(timeInSeconds) && timeInSeconds <= 60) {
+		buffer = timeInSeconds * 1000;
+		console.log('buffer set to: ' + buffer);
+		postToChannel('', 'Setting flight buffer time to: ' + (buffer / 1000) + ' seconds.');
 	}
+	else {
+		// queue arguments passed in message are unacceptable
+		postToChannel('You requested a buffer time with missing or incorrect values, try again!',
+			'Format: `k!buffer timeInSeconds (60 second maximum)',
+		);
 
-	function setBuffer(timeInSeconds) {
-		timeInSeconds = Math.abs(timeInSeconds);
-		if (Number.isInteger(timeInSeconds) && timeInSeconds <= 60) {
-			buffer = timeInSeconds * 1000;
-			console.log('buffer set to: ' + buffer);
-			msgEmbed('', 'Setting flight buffer time to: ' + (buffer / 1000) + ' seconds.');
-		}
-		else {
-			// queue arguments passed in message are unacceptable
-			msgEmbed('You requested a buffer time with missing or incorrect values, try again!',
-				'Format: `k!buffer timeInSeconds (60 second maximum)');
-
-			throw new Error('setBuffer() expects an integer between 0 and 60 inclusive');
-		}
-		return setBuffer();
+		throw new Error('setBuffer() expects an integer between 0 and 60 inclusive');
 	}
+}
 
-	exports.setBuffer = setBuffer;
-	//#endregion
-});
+exports.setBuffer = setBuffer;
+//#endregion
