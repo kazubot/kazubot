@@ -428,7 +428,6 @@ function setBuffer(timeInSeconds) {
 
 		throw new Error('setBuffer() expects an integer between 0 and 60 inclusive');
 	}
-	return setBuffer();
 }
 
 exports.setBuffer = setBuffer;
