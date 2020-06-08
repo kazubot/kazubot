@@ -37,7 +37,11 @@ jobs:
         SECRETHUB_TOKEN_PATH: mattdonatelli/kazubot/lab/token
     - name: Run Docker and Tests
       run: docker run -e SCRIPT="test" -e SECRETHUB_CREDENTIAL=${{ secrets.SECRETHUB_CREDENTIAL }} -e SECRETHUB_TOKEN_PATH="mattdonatelli/kazubot/lab/token" -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
-    - name: Publish Docker image
+    - name: Publish Docker image unique
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         docker push mattdonatelli/kazubot:${GITHUB_SHA:0:7}
+    - name: Publish Docker image as latest
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          docker push mattdonatelli/kazubot:latest
