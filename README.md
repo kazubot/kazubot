@@ -5,6 +5,7 @@
 2. [Commands](#Commands)
 2. [Setup](#Setup)
 3. [Support](#Support)
+4. [Acknowledgements](#Acknowledgements)
 
 <a name="About">About</a>
 ------------------------------
@@ -33,6 +34,11 @@ Now you're ready to fly!
 ------------------------------
 ##### Email: [funmancers@gmail.com][support email]
 
+<a name="Acknowledgements">Acknowledgements</a>
+------------------------------
+Kazubot's icon art was created by [@jauxiles][artist] and is used with permission for this application only. 
+
 <!-- Reference Links -->
 [support email]: mailto:funmancers@gmail.com
 [invite]: https://discordapp.com/oauth2/authorize?client_id=710594126860779625&scope=bot&permissions=1275583681
+[artist]: https://twitter.com/jauxiles?lang=en
