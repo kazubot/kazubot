@@ -42,6 +42,6 @@ jobs:
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         docker push mattdonatelli/kazubot:${GITHUB_SHA:0:7}
     - name: Publish Docker image as latest
-        run: |
+      run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
           docker push mattdonatelli/kazubot:latest
