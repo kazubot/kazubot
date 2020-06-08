@@ -1,14 +1,7 @@
 # Kazubot
 
+### "Let me help you manage your island queues!"
 ![KazubotIcon](docs/kazubot.jpg?raw=true "Icon")
-###"Let me help you manage your island queues!"
-
-## Table of Contents
-1. [About](#About)
-2. [Commands](#Commands)
-2. [Setup](#Setup)
-3. [Support](#Support)
-4. [Acknowledgements](#Acknowledgements)
 
 <a name="About">About</a>
 ------------------------------
