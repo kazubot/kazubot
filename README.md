@@ -1,24 +1,13 @@
 # Kazubot
 
-## Table of Contents
-1. [About](#About)
-2. [Commands](#Commands)
-2. [Setup](#Setup)
-3. [Support](#Support)
-4. [Acknowledgements](#Acknowledgements)
+### "Let me help you manage your island queues!"
+![KazubotIcon](docs/kazubot.jpg?raw=true "Icon")
 
 <a name="About">About</a>
 ------------------------------
-Kazubot is a bot that handles air traffic control (queuing) for AC:NH Discord servers.
-
-![Alt text currently unavailable](docs/KazubotExample.png?raw=true "Example Interaction")
-
 Kazubot manages queues for selling turnips in AC:NH in a conversational and organic way within your Discord server. No need for external websites, spreadsheets, or manual coordination. Just have your community members use the commands below to start their island queues and let Kazubot do the logistics.
 
-<a name="Commands">Commands</a>
-------------------------------
-
-![Alt text currently unavailable](docs/KazubotCommands.png?raw=true "Bot Commands")
+![Alt text currently unavailable](docs/KazubotExample.png?raw=true "Example Interaction")
 
 <a name="Setup">Setup</a>
 ------------------------------
@@ -28,7 +17,25 @@ Use [this link][invite] to invite Kazubot to your server.
 
 We recommend using the `k!help` command and pinning it to relevant channels in your community so that members can see the available commands. 
 
-Now you're ready to fly!
+<a name="Commands">Commands</a>
+------------------------------
+
+| command                                      	| description                                                          	|
+|----------------------------------------------	|----------------------------------------------------------------------	|
+| k!hi                                         	| check if kazubot is online                                           	|
+| k!help                                        | display up list of commands as message on server (good for pinning)   |
+| k!start dodocode [visitorLimit] [queueLimit] 	| start a queue: dodocode required, visitor max = 7, queue max = 120   	|
+| k!end                                        	| end a queue                                                          	|
+| k!join                                       	| join a queue                                                         	|
+| k!fly                                        	| fly when departing airport                                           	|
+| k!landed                                     	| signal landed when on host island (important for visitor count)      	|
+| k!returned                                   	| indicate you've left the host island                                 	|
+| k!leave                                      	| leave the queue at any stage                                         	|
+| k!island                                     	| see hosted island info                                               	|
+| k!queue                                      	| display queue members and order                                      	|
+| k!visitors                                   	| show island visitors                                                 	|
+| k!remove @handle                             	| remove someone from the queue by @handle (host/admin only)           	|
+| k!buffer timeInSeconds                       	| adjust buffer time for flight clearance, max 60 seconds (admin only) 	|
 
 <a name="Support">Support</a>
 ------------------------------
