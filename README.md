@@ -32,7 +32,9 @@ Now you're ready to fly!
 
 <a name="Support">Support</a>
 ------------------------------
-##### Email: [funmancers@gmail.com][support email]
+If you use Kazubot on your discord server, please consider chipping in for our web hosting costs by using the **Sponsor** button at the top of this page. Thank you <3
+
+If you need any help, please feel free to reach out via e-mail here: [funmancers@gmail.com][support email]
 
 <a name="Acknowledgements">Acknowledgements</a>
 ------------------------------
