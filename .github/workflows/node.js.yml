@@ -28,7 +28,7 @@ jobs:
     - name: Run eslint
       run: npm run lint
     - name: Build Docker Image
-      run: docker build -t mattdonatelli/kazubot:${GITHUB_SHA:0:7} .
+      run: docker build -t mattdonatelli/kazubot:${GITHUB_SHA:0:7} -t mattdonatelli/kazubot:latest .
     - uses: secrethub/actions/env-export@v0.1.0
       env:
         SECRETHUB_CREDENTIAL: ${{ secrets.SECRETHUB_CREDENTIAL }}
@@ -37,7 +37,11 @@ jobs:
         SECRETHUB_TOKEN_PATH: mattdonatelli/kazubot/lab/token
     - name: Run Docker and Tests
       run: docker run -e SCRIPT="test" -e SECRETHUB_CREDENTIAL=${{ secrets.SECRETHUB_CREDENTIAL }} -e SECRETHUB_TOKEN_PATH="mattdonatelli/kazubot/lab/token" -- mattdonatelli/kazubot:${GITHUB_SHA:0:7}
-    - name: Publish Docker image
+    - name: Publish Docker image unique
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         docker push mattdonatelli/kazubot:${GITHUB_SHA:0:7}
+    - name: Publish Docker image as latest
+      run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          docker push mattdonatelli/kazubot:latest

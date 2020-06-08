@@ -8,7 +8,7 @@ So you want to contribute to Kazubot's development? Neat! Here's what you'll nee
 
 3. Invite your bot to your Discord server, [like so][invite].
 
-4. Sign up for [Secrethub][secrethub] and store your Token safely using it, following steps 1 -> 3. Also, know where your secrethub credential lives on your machine, you will need this location later.
+4. Sign up for [Secrethub][secrethub] and store your Token safely using it, following steps 1 -> 3. Also, know where your secrethub credential lives on your machine, you will need this location later. (Leave passphrase blank during creation if you want to avoid issues with the commands below)
 
 5. Let's test that you've got the necessary pre-requisites working. Run this command, substituting the `username` with your secrethub username and `repo/token` with the repository name and secret name you stored your token as in the previous step. 
 
