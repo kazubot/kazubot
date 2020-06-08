@@ -1,5 +1,8 @@
 # Kazubot
 
+![KazubotIcon](docs/kazubot.jpg?raw=true "Icon")
+###"Let me help you manage your island queues!"
+
 ## Table of Contents
 1. [About](#About)
 2. [Commands](#Commands)
@@ -18,7 +21,22 @@ Kazubot manages queues for selling turnips in AC:NH in a conversational and orga
 <a name="Commands">Commands</a>
 ------------------------------
 
-![Alt text currently unavailable](docs/KazubotCommands.png?raw=true "Bot Commands")
+| command                                      	| description                                                          	|
+|----------------------------------------------	|----------------------------------------------------------------------	|
+| k!hi                                         	| check if kazubot is online                                           	|
+| k!help                                        | display up list of commands as message on server (good for pinning)   |
+| k!start dodocode [visitorLimit] [queueLimit] 	| start a queue: dodocode required, visitor max = 7, queue max = 120   	|
+| k!end                                        	| end a queue                                                          	|
+| k!join                                       	| join a queue                                                         	|
+| k!fly                                        	| fly when departing airport                                           	|
+| k!landed                                     	| signal landed when on host island (important for visitor count)      	|
+| k!returned                                   	| indicate you've left the host island                                 	|
+| k!leave                                      	| leave the queue at any stage                                         	|
+| k!island                                     	| see hosted island info                                               	|
+| k!queue                                      	| display queue members and order                                      	|
+| k!visitors                                   	| show island visitors                                                 	|
+| k!remove @handle                             	| remove someone from the queue by @handle (host/admin only)           	|
+| k!buffer timeInSeconds                       	| adjust buffer time for flight clearance, max 60 seconds (admin only) 	|
 
 <a name="Setup">Setup</a>
 ------------------------------
