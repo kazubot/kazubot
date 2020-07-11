@@ -11,6 +11,9 @@ Kazubot manages queues for selling turnips in AC:NH in a conversational and orga
 
 <a name="Setup">Setup</a>
 ------------------------------
+
+UPDATE: THIS IS TEMPORARILY DISABLED DUE TO CONFLICTS, WILL FIX AND NOTIFY WHEN IT CAN BE USED AGAIN. 
+
 So you want to get Kazubot up and running for your Discord community? Great! It's simple:
 
 Use [this link][invite] to invite Kazubot to your server.
