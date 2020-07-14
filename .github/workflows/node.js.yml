@@ -29,7 +29,7 @@ jobs:
       run: npm run lint
     - name: Build Docker Image
       run: docker build -t mattdonatelli/kazubot:${GITHUB_SHA:0:7} -t mattdonatelli/kazubot:latest .
-    - uses: secrethub/actions/env-export@v0.1.0
+    - uses: secrethub/actions/env-export@v0.2.0
       env:
         SECRETHUB_CREDENTIAL: ${{ secrets.SECRETHUB_CREDENTIAL }}
         DOCKER_USERNAME: secrethub://mattdonatelli/kazubot/docker/username
