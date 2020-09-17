@@ -1,5 +1,5 @@
 # Node JS Version
-FROM node:12.18.2-alpine3.9
+FROM node:12.18.4-alpine3.9
 LABEL name='Kazubot'
 LABEL version='1.0.0'
 
