@@ -5,7 +5,7 @@
   "main": "/src/js/bot.js",
   "dependencies": {
     "discord.js": "^12.2.0",
-    "mocha": "^8.0.1",
+    "mocha": "^8.2.1",
     "pm2": "^4.4.0",
     "rewire": "^5.0.0"
   },
