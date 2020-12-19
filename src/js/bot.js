@@ -6,6 +6,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 exports.client = client;
 const prefix = 'k!';
+const debug = require('../../debug.json');
 
 // grab token from docker secrets
 const token = process.env.TOKEN;
@@ -22,7 +23,15 @@ client.once('ready', () => {
 	console.log('Ready!');
 });
 
-client.login(token);
+// choosing between debug and production token
+if (debug.token) {
+	console.log('Starting in Debug Mode');
+	client.login('NzEzNTI3MTg4MDgyNjU1MjMy.XshZ-g.oXp2WjWzYw47S4_i9tXjeLS88YA');
+}
+else {
+	console.log('Starting in Release Mode');
+	client.login(token);
+}
 
 let latestMessage;
 

@@ -1,7 +1,7 @@
 # Node JS Version
 FROM node:12.18.2-alpine3.9
 LABEL name='Kazubot'
-LABEL version='1.0.0'
+LABEL version='1.0.1'
 
 # Using Secrethub
 RUN apk update && apk add --repository https://alpine.secrethub.io/alpine/edge/main --allow-untrusted secrethub-cli
