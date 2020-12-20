@@ -26,7 +26,7 @@ client.once('ready', () => {
 // choosing between debug and production token
 if (debug.token) {
 	console.log('Starting in Debug Mode');
-	client.login('NzEzNTI3MTg4MDgyNjU1MjMy.XshZ-g.oXp2WjWzYw47S4_i9tXjeLS88YA');
+	client.login(debug.token);
 }
 else {
 	console.log('Starting in Release Mode');

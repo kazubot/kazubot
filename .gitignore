@@ -12,5 +12,5 @@ node_modules
 # Config
 config.json
 
-# Discord Token
-token.json
+# Debug
+debug.json
